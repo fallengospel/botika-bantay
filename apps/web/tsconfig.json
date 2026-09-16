@@ -1,5 +1,4 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "target": "ES5",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -20,8 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@botika-bantay/shared": ["../../packages/shared/src"]
+      "@/*": ["./*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
