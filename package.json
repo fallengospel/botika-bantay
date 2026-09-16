@@ -1,0 +1,18 @@
+{
+  "name": "botika-bantay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BotikaBantay - Medicine Price Comparison & Authenticity Verification Platform",
+  "scripts": {
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:mobile": "cd apps/mobile && npm start",
+    "build:web": "cd apps/web && npm run build",
+    "lint": "eslint apps --ext .ts,.tsx",
+    "db:migrate": "npx supabase db push",
+    "db:seed": "npx tsx scripts/seed.ts",
+    "db:reset": "npx supabase db reset"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
