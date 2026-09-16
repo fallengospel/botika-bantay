@@ -3,7 +3,14 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { formatPrice, calculateStaleness } from '@botika-bantay/shared';
+const formatPrice = (price: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(price);
+
+const calculateStaleness = (lastUpdated: Date): 'fresh' | 'stale' | 'very_stale' => {
+  const diffDays = Math.floor((Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 30) return 'fresh';
+  if (diffDays <= 60) return 'stale';
+  return 'very_stale';
+};
 
 interface Price {
   id: string;
