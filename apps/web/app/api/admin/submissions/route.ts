@@ -32,8 +32,8 @@ export async function GET(request: Request) {
   }
 
   // Manual join
-  const medicineIds = [...new Set(submissions.map(s => s.medicine_id))];
-  const branchIds = [...new Set(submissions.map(s => s.branch_id))];
+  const medicineIds = Array.from(new Set(submissions.map(s => s.medicine_id)));
+  const branchIds = Array.from(new Set(submissions.map(s => s.branch_id)));
 
   const [medsResult, branchesResult] = await Promise.all([
     supabase.from('medicines').select('id, brand_name, generic_name').in('id', medicineIds),

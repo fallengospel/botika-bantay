@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   }
 
   // Manual join for medicines
-  const medicineIds = [...new Set(reports.filter(r => r.medicine_id).map(r => r.medicine_id))];
+  const medicineIds = Array.from(new Set(reports.filter((r: any) => r.medicine_id).map((r: any) => r.medicine_id)));
   let medsMap = new Map();
   if (medicineIds.length > 0) {
     const { data: meds } = await supabase.from('medicines').select('id, brand_name').in('id', medicineIds);

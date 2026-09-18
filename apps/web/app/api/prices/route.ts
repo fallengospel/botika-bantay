@@ -35,8 +35,8 @@ export async function GET(request: Request) {
   }
 
   // Manual join: fetch medicines and branches
-  const medicineIds = [...new Set(prices.map(p => p.medicine_id))];
-  const branchIds = [...new Set(prices.map(p => p.branch_id))];
+  const medicineIds = Array.from(new Set(prices.map(p => p.medicine_id)));
+  const branchIds = Array.from(new Set(prices.map(p => p.branch_id)));
 
   const [medsResult, branchesResult] = await Promise.all([
     supabase.from('medicines').select('*').in('id', medicineIds),
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
   const branchesMap = new Map((branchesResult.data || []).map(b => [b.id, b]));
 
   // Fetch chains for branches
-  const chainIds = [...new Set((branchesResult.data || []).map(b => b.chain_id))];
+  const chainIds = Array.from(new Set((branchesResult.data || []).map(b => b.chain_id)));
   const { data: chains } = await supabase.from('pharmacy_chains').select('*').in('id', chainIds);
   const chainsMap = new Map((chains || []).map(c => [c.id, c]));
 

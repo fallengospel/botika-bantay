@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   }
 
   // Manual join: fetch chains
-  const chainIds = [...new Set(branches.map(b => b.chain_id))];
+  const chainIds = Array.from(new Set(branches.map(b => b.chain_id)));
   const { data: chains } = await supabase
     .from('pharmacy_chains')
     .select('*')
