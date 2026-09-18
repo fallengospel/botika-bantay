@@ -21,6 +21,7 @@ function MedicinesContent() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const q = searchParams.get('search');
@@ -34,15 +35,22 @@ function MedicinesContent() {
 
   const fetchMedicines = async (search?: string) => {
     setLoading(true);
+    setFetchError(null);
     try {
       const url = search
         ? `/api/medicines?search=${encodeURIComponent(search)}`
         : '/api/medicines';
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
       const result = await response.json();
-      setMedicines(result.data || []);
+      const items = Array.isArray(result) ? result : (Array.isArray(result?.data) ? result.data : []);
+      setMedicines(items);
     } catch (error) {
       console.error('Failed to fetch medicines:', error);
+      setFetchError(error instanceof Error ? error.message : 'Failed to load');
+      setMedicines([]);
     } finally {
       setLoading(false);
     }
@@ -77,6 +85,17 @@ function MedicinesContent() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
             <p className="mt-4 text-surface-600">Loading medicines...</p>
           </div>
+        ) : fetchError ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-2">Failed to load medicines</p>
+            <p className="text-sm text-surface-500 mb-4">{fetchError}</p>
+            <button
+              onClick={() => fetchMedicines(searchQuery || undefined)}
+              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+            >
+              Try Again
+            </button>
+          </div>
         ) : medicines.length === 0 ? (
           <div className="text-center py-12">
             <Pill className="w-16 h-16 text-surface-300 mx-auto mb-4" />
@@ -84,7 +103,7 @@ function MedicinesContent() {
           </div>
         ) : (
           <div className="space-y-4">
-            {medicines.map((medicine) => (
+            {Array.isArray(medicines) && medicines.map((medicine) => (
               <MedicineCard key={medicine.id} medicine={medicine} />
             ))}
           </div>
