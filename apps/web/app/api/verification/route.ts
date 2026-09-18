@@ -22,51 +22,106 @@ export async function POST(request: Request) {
     );
   }
 
-  // Try to find medicine by barcode first
-  let { data: medicine, error: medicineError } = await supabase
+  const code = scannedCode.trim();
+  let medicine = null;
+
+  // 1. Try exact match by barcode
+  const byBarcode = await supabase
     .from('medicines')
     .select('*')
-    .eq('barcode', scannedCode.trim())
+    .eq('barcode', code)
     .single();
 
-  // If not found by barcode, try by FDA registration number
+  if (byBarcode.data) {
+    medicine = byBarcode.data;
+  }
+
+  // 2. Try exact match by FDA registration number
   if (!medicine) {
-    const result = await supabase
+    const byFda = await supabase
       .from('medicines')
       .select('*')
-      .eq('fda_registration_number', scannedCode.trim())
+      .eq('fda_registration_number', code)
       .single();
-    
-    medicine = result.data;
+
+    if (byFda.data) {
+      medicine = byFda.data;
+    }
   }
 
-  // Log the verification attempt (don't fail if insert fails)
-  try {
-    await supabase.from('verification_records').insert({
-      scanned_code: scannedCode.trim(),
-      medicine_id: medicine?.id || null,
-      match_result: medicine ? 'found' : 'not_found',
-      fda_data: medicine || null,
-    });
-  } catch {
-    // Log but don't fail the request
+  // 3. Try ilike search across brand_name, generic_name, barcode, fda_registration_number
+  if (!medicine) {
+    const { data: results } = await supabase
+      .from('medicines')
+      .select('*')
+      .or(`brand_name.ilike.%${code}%,generic_name.ilike.%${code}%,barcode.ilike.%${code}%,fda_registration_number.ilike.%${code}%`)
+      .limit(1);
+
+    if (results && results.length > 0) {
+      medicine = results[0];
+    }
   }
 
-  if (medicineError && medicineError.code !== 'PGRST116') {
-    return NextResponse.json({ error: medicineError.message }, { status: 500 });
+  // 4. Try partial word match (e.g. "CDRR" matches "Ceterizine" type logic — search each word)
+  if (!medicine) {
+    const words = code.split(/[\s\-_/]+/).filter(w => w.length >= 3);
+    if (words.length > 0) {
+      const orClause = words
+        .map(w => `brand_name.ilike.%${w}%,generic_name.ilike.%${w}%`)
+        .join(',');
+
+      const { data: results } = await supabase
+        .from('medicines')
+        .select('*')
+        .or(orClause)
+        .limit(5);
+
+      if (results && results.length === 1) {
+        medicine = results[0];
+      } else if (results && results.length > 1) {
+        // Return ambiguous match
+        await logVerification(supabase, code, null, 'ambiguous');
+        return NextResponse.json({
+          status: 'ambiguous',
+          message: `Found ${results.length} possible matches. Please be more specific.`,
+          medicine: null,
+          suggestions: results.map((m: any) => ({
+            id: m.id,
+            brand_name: m.brand_name,
+            generic_name: m.generic_name,
+          })),
+        });
+      }
+    }
   }
+
+  // Log the verification attempt
+  await logVerification(supabase, code, medicine?.id || null, medicine ? 'found' : 'not_found');
 
   if (!medicine) {
     return NextResponse.json({
       status: 'not_found',
-      message: 'Product not found in FDA registry. Please verify manually or report.',
+      message: `No medicine found for "${code}". This could mean the product is not in our database yet, or the code is incorrect.`,
       medicine: null,
     });
   }
 
   return NextResponse.json({
     status: 'found',
-    message: 'Product verified as FDA-registered',
+    message: `Product verified: ${medicine.brand_name} (${medicine.generic_name}) — FDA Registration ${medicine.fda_registration_number}`,
     medicine,
   });
+}
+
+async function logVerification(supabase: any, code: string, medicineId: string | null, result: string) {
+  try {
+    await supabase.from('verification_records').insert({
+      scanned_code: code,
+      medicine_id: medicineId,
+      match_result: result,
+      fda_data: null,
+    });
+  } catch {
+    // Log but don't fail the request
+  }
 }
