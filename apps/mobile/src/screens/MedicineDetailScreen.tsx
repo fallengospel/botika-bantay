@@ -6,9 +6,10 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { MapPin, Clock, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { getMedicineById, getPricesForMedicine } from '../services/supabase';
-import { formatPrice, calculateStaleness } from '@botika-bantay/shared';
+import { formatPrice } from '@botika-bantay/shared';
+import PriceCard from '../components/price/PriceCard';
 
 interface Medicine {
   id: string;
@@ -59,23 +60,6 @@ export default function MedicineDetailScreen({ route }: any) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getStalenessBadge = (lastUpdated: string) => {
-    const staleness = calculateStaleness(new Date(lastUpdated));
-    const badges = {
-      fresh: { text: 'Fresh', color: '#dcfce7', textColor: '#166534' },
-      stale: { text: 'Stale', color: '#fef9c3', textColor: '#854d0e' },
-      very_stale: { text: 'Outdated', color: '#fee2e2', color: '#991b1b' },
-    };
-    const badge = badges[staleness];
-    return (
-      <View style={[styles.badge, { backgroundColor: badge.color }]}>
-        <Text style={[styles.badgeText, { color: badge.textColor }]}>
-          {badge.text}
-        </Text>
-      </View>
-    );
   };
 
   if (loading) {
@@ -158,48 +142,11 @@ export default function MedicineDetailScreen({ route }: any) {
           </View>
         ) : (
           sortedPrices.map((price, index) => (
-            <View
-              key={price.id}
-              style={[
-                styles.priceCard,
-                index === 0 && styles.lowestPriceCard,
-              ]}
-            >
-              <View style={styles.priceHeader}>
-                <View style={styles.priceChain}>
-                  <View
-                    style={[
-                      styles.chainDot,
-                      { backgroundColor: price.branch.chain.color },
-                    ]}
-                  />
-                  <Text style={styles.chainName}>{price.branch.chain.name}</Text>
-                  {index === 0 && (
-                    <View style={styles.lowestBadge}>
-                      <Text style={styles.lowestBadgeText}>Lowest</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={styles.priceAmount}>{formatPrice(price.price)}</Text>
-              </View>
-              
-              <View style={styles.priceLocation}>
-                <MapPin size={14} color="#6b7280" />
-                <Text style={styles.locationText}>
-                  {price.branch.name} - {price.branch.address}
-                </Text>
-              </View>
-              
-              <View style={styles.priceFooter}>
-                <View style={styles.priceTime}>
-                  <Clock size={14} color="#9ca3af" />
-                  <Text style={styles.timeText}>
-                    Updated: {new Date(price.last_updated).toLocaleDateString()}
-                  </Text>
-                </View>
-                {getStalenessBadge(price.last_updated)}
-              </View>
-            </View>
+            <PriceCard 
+              key={price.id} 
+              price={price} 
+              isLowest={index === 0}
+            />
           ))
         )}
       </View>
@@ -296,87 +243,5 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
     color: '#9ca3af',
-  },
-  priceCard: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-  },
-  lowestPriceCard: {
-    backgroundColor: '#dcfce7',
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
-  },
-  priceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  priceChain: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  chainDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  chainName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  lowestBadge: {
-    backgroundColor: '#16a34a',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  lowestBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  priceAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  priceLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  locationText: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginLeft: 4,
-  },
-  priceFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  priceTime: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  timeText: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginLeft: 4,
-  },
-  badge: {
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '600',
   },
 });

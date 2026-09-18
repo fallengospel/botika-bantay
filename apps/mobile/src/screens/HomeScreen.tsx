@@ -53,6 +53,21 @@ export default function HomeScreen({ navigation }: any) {
               </Text>
             </View>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Nearby')}
+          >
+            <View style={[styles.actionIcon, styles.nearbyIcon]}>
+              <MapPin size={32} color="#ea580c" />
+            </View>
+            <View style={styles.actionContent}>
+              <Text style={styles.actionTitle}>Nearby Pharmacies</Text>
+              <Text style={styles.actionDescription}>
+                Find pharmacies near you with directions
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Features */}
@@ -161,6 +176,9 @@ const styles = StyleSheet.create({
   },
   verifyIcon: {
     backgroundColor: '#dbeafe',
+  },
+  nearbyIcon: {
+    backgroundColor: '#ffedd5',
   },
   actionContent: {
     flex: 1,

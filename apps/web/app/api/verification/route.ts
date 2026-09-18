@@ -6,12 +6,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
   }
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
   const { scannedCode } = body;
 
-  if (!scannedCode) {
+  if (!scannedCode || typeof scannedCode !== 'string' || scannedCode.trim().length === 0) {
     return NextResponse.json(
-      { error: 'Scanned code is required' },
+      { error: 'scannedCode is required and must be a non-empty string' },
       { status: 400 }
     );
   }
@@ -20,7 +26,7 @@ export async function POST(request: Request) {
   let { data: medicine, error: medicineError } = await supabase
     .from('medicines')
     .select('*')
-    .eq('barcode', scannedCode)
+    .eq('barcode', scannedCode.trim())
     .single();
 
   // If not found by barcode, try by FDA registration number
@@ -28,22 +34,29 @@ export async function POST(request: Request) {
     const result = await supabase
       .from('medicines')
       .select('*')
-      .eq('fda_registration_number', scannedCode)
+      .eq('fda_registration_number', scannedCode.trim())
       .single();
     
     medicine = result.data;
-    medicineError = result.error;
   }
 
-  // Log the verification attempt
-  await supabase.from('verification_records').insert({
-    scanned_code: scannedCode,
-    medicine_id: medicine?.id || null,
-    match_result: medicine ? 'found' : 'not_found',
-    fda_data: medicine || null,
-  });
+  // Log the verification attempt (don't fail if insert fails)
+  try {
+    await supabase.from('verification_records').insert({
+      scanned_code: scannedCode.trim(),
+      medicine_id: medicine?.id || null,
+      match_result: medicine ? 'found' : 'not_found',
+      fda_data: medicine || null,
+    });
+  } catch {
+    // Log but don't fail the request
+  }
 
-  if (medicineError || !medicine) {
+  if (medicineError && medicineError.code !== 'PGRST116') {
+    return NextResponse.json({ error: medicineError.message }, { status: 500 });
+  }
+
+  if (!medicine) {
     return NextResponse.json({
       status: 'not_found',
       message: 'Product not found in FDA registry. Please verify manually or report.',

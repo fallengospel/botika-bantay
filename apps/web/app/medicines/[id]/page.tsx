@@ -1,16 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
-import Link from 'next/link';
-const formatPrice = (price: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(price);
-
-const calculateStaleness = (lastUpdated: Date): 'fresh' | 'stale' | 'very_stale' => {
-  const diffDays = Math.floor((Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays <= 30) return 'fresh';
-  if (diffDays <= 60) return 'stale';
-  return 'very_stale';
-};
+import { AlertTriangle, CheckCircle } from 'lucide-react';
+import Header from '@/components/layout/Header';
+import PriceCard from '@/components/price/PriceCard';
 
 interface Price {
   id: string;
@@ -53,25 +46,23 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
       const response = await fetch(`/api/prices?medicineId=${params.id}`);
       const data = await response.json();
       
-      if (data.length > 0) {
+      if (data.length > 0 && data[0].medicine) {
         setMedicine(data[0].medicine);
         setPrices(data);
+      } else {
+        const medResponse = await fetch(`/api/medicines?search=`);
+        const medData = await medResponse.json();
+        const found = medData.find((m: any) => m.id === params.id);
+        if (found) {
+          setMedicine(found);
+          setPrices([]);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch medicine details:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const getStalenessBadge = (lastUpdated: string) => {
-    const staleness = calculateStaleness(new Date(lastUpdated));
-    const badges = {
-      fresh: <span className="badge-fresh">Fresh</span>,
-      stale: <span className="badge-stale">Stale</span>,
-      very_stale: <span className="badge-very-stale">Outdated</span>,
-    };
-    return badges[staleness];
   };
 
   if (loading) {
@@ -97,17 +88,12 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
 
   return (
     <main className="flex-1 bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="max-w-4xl mx-auto">
-          <Link href="/medicines" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4">
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Search</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">{medicine.brand_name}</h1>
-          <p className="text-gray-600">{medicine.generic_name}</p>
-        </div>
-      </div>
+      <Header 
+        title={medicine.brand_name}
+        subtitle={medicine.generic_name}
+        backHref="/medicines"
+        backLabel="Back to Search"
+      />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Medicine Info */}
@@ -140,7 +126,7 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
               <CheckCircle className="w-6 h-6 text-primary-600" />
               <div>
                 <p className="font-semibold text-primary-800">
-                  You can save up to {formatPrice(savings)}
+                  You can save up to {new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(savings)}
                 </p>
                 <p className="text-sm text-primary-600">
                   by choosing the lowest price option
@@ -167,50 +153,11 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
           ) : (
             <div className="space-y-3">
               {sortedPrices.map((price, index) => (
-                <div
-                  key={price.id}
-                  className={`p-4 rounded-lg border ${
-                    index === 0
-                      ? 'border-primary-200 bg-primary-50'
-                      : 'border-gray-200 bg-white'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: price.branch.chain.color }}
-                        ></span>
-                        <span className="font-medium text-gray-900">
-                          {price.branch.chain.name}
-                        </span>
-                        {index === 0 && (
-                          <span className="bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full">
-                            Lowest
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        {price.branch.name} - {price.branch.address}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                        <Clock className="w-4 h-4" />
-                        Updated: {new Date(price.last_updated).toLocaleDateString()}
-                        {getStalenessBadge(price.last_updated)}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-gray-900">
-                        {formatPrice(price.price)}
-                      </p>
-                      <p className="text-xs text-gray-500 capitalize">
-                        {price.source_type}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <PriceCard 
+                  key={price.id} 
+                  price={price} 
+                  isLowest={index === 0}
+                />
               ))}
             </div>
           )}

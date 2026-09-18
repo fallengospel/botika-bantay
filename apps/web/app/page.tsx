@@ -1,11 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Camera, Pill, ShieldCheck, TrendingDown, MapPin } from 'lucide-react';
+import { Search, Pill, ShieldCheck, TrendingDown, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/medicines?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <main className="flex-1">
@@ -23,7 +32,7 @@ export default function Home() {
           </p>
           
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto">
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
               <input
@@ -32,9 +41,10 @@ export default function Home() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-14 pr-4 py-4 rounded-xl text-gray-900 text-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-primary-300"
+                aria-label="Search medicine"
               />
             </div>
-          </div>
+          </form>
         </div>
       </section>
 
@@ -64,7 +74,7 @@ export default function Home() {
             </Link>
 
             {/* Verification Card */}
-            <div className="card hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link href="/scanner" className="card hover:shadow-lg transition-shadow cursor-pointer group">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition-colors">
                   <ShieldCheck className="w-8 h-8 text-blue-600" />
@@ -78,7 +88,24 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
+
+            {/* Nearby Pharmacies Card */}
+            <Link href="/nearby" className="card hover:shadow-lg transition-shadow cursor-pointer group">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-orange-100 rounded-xl group-hover:bg-orange-200 transition-colors">
+                  <MapPin className="w-8 h-8 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Nearby Pharmacies
+                  </h3>
+                  <p className="text-gray-600">
+                    Find pharmacies near you with the best prices and directions.
+                  </p>
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -112,8 +139,8 @@ export default function Home() {
             </div>
             
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-8 h-8 text-accent-600" />
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-8 h-8 text-orange-600" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Location-Based</h3>
               <p className="text-gray-600 text-sm">
@@ -131,7 +158,7 @@ export default function Home() {
             BotikaBantay - Presyo na Tama, Gamot na Tunay
           </p>
           <p className="text-gray-500 text-xs">
-            © 2024 BotikaBantay. All rights reserved. Not a substitute for professional medical advice.
+            © {new Date().getFullYear()} BotikaBantay. All rights reserved. Not a substitute for professional medical advice.
           </p>
         </div>
       </footer>

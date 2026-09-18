@@ -1,10 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  getMedicinesCached,
+  setMedicinesCached,
+  getMedicineDetailCached,
+  setMedicineDetailCached,
+  getPricesCached,
+  setPricesCached,
+} from '../utils/cache';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'YOUR_SUPABASE_URL';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Warning: EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY must be set in your .env file');
+}
+
+export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder', {
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,
@@ -14,6 +26,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 export async function getMedicines(search?: string) {
+  const cached = await getMedicinesCached(search);
+  if (cached) return cached;
+
   let query = supabase
     .from('medicines')
     .select('*')
@@ -25,10 +40,18 @@ export async function getMedicines(search?: string) {
 
   const { data, error } = await query;
   if (error) throw error;
+
+  if (data) {
+    await setMedicinesCached(data, search);
+  }
+
   return data;
 }
 
 export async function getMedicineById(id: string) {
+  const cached = await getMedicineDetailCached(id);
+  if (cached) return cached;
+
   const { data, error } = await supabase
     .from('medicines')
     .select('*')
@@ -36,10 +59,18 @@ export async function getMedicineById(id: string) {
     .single();
 
   if (error) throw error;
+
+  if (data) {
+    await setMedicineDetailCached(id, data);
+  }
+
   return data;
 }
 
 export async function getPricesForMedicine(medicineId: string) {
+  const cached = await getPricesCached(medicineId);
+  if (cached) return cached;
+
   const { data, error } = await supabase
     .from('prices')
     .select(`
@@ -50,6 +81,11 @@ export async function getPricesForMedicine(medicineId: string) {
     .order('price');
 
   if (error) throw error;
+
+  if (data) {
+    await setPricesCached(medicineId, data);
+  }
+
   return data;
 }
 

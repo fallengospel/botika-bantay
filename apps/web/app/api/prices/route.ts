@@ -41,8 +41,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
   }
 
-  const body = await request.json();
-  
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  if (!body.medicineId || !body.branchId || !body.price) {
+    return NextResponse.json({ error: 'medicineId, branchId, and price are required' }, { status: 400 });
+  }
+
+  if (typeof body.price !== 'number' || body.price <= 0) {
+    return NextResponse.json({ error: 'Price must be a positive number' }, { status: 400 });
+  }
+
   const { data, error } = await supabase
     .from('prices')
     .insert({
@@ -50,7 +63,7 @@ export async function POST(request: Request) {
       branch_id: body.branchId,
       price: body.price,
       source_type: body.sourceType || 'crowdsourced',
-      submitted_by: body.submittedBy,
+      submitted_by: body.submittedBy || null,
       verification_status: 'pending',
     })
     .select()

@@ -8,7 +8,7 @@ A Unified Medicine Price Comparison & Authenticity Verification Platform for the
 
 - **Presyo Check** - Compare medicine prices across major pharmacy chains
 - **Tunay Check** - Verify medicine authenticity via barcode scanning
-- **Location-Based** - Find pharmacies near you with the best prices
+- **Nearby Pharmacies** - Find pharmacies near you with the best prices
 - **FDA Verified** - Cross-referenced with FDA Philippines drug registry
 
 ## Tech Stack
@@ -28,8 +28,14 @@ botika-bantay/
 ├── packages/
 │   └── shared/       # Shared types, utils, constants
 ├── supabase/         # Database schema
-└── scripts/          # Data ingestion scripts
+├── scripts/          # Data ingestion scripts
+└── docs/             # Documentation
 ```
+
+## Documentation
+
+- **[Usage Guide](docs/USAGE.md)** - Complete setup, development, and deployment guide
+- **[QA Bug Report](docs/QA_BUG_REPORT.md)** - Bug tracking and status
 
 ## Prerequisites
 
@@ -37,7 +43,7 @@ botika-bantay/
 - npm or yarn
 - Supabase account (free tier)
 
-## Setup
+## Quick Start
 
 1. **Clone the repository**
    ```bash
@@ -87,14 +93,16 @@ botika-bantay/
 ## Environment Variables
 
 ```env
-# Supabase
+# Supabase (Web)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_APP_NAME=BotikaBantay
+# Supabase (Mobile)
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Admin (seed script only)
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
 ## Contributing

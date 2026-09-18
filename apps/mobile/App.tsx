@@ -8,6 +8,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import MedicinesScreen from './src/screens/MedicinesScreen';
 import MedicineDetailScreen from './src/screens/MedicineDetailScreen';
 import ScannerScreen from './src/screens/ScannerScreen';
+import NearbyScreen from './src/screens/NearbyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,11 @@ export default function App() {
             name="Scanner"
             component={ScannerScreen}
             options={{ title: 'Tunay Check' }}
+          />
+          <Stack.Screen
+            name="Nearby"
+            component={NearbyScreen}
+            options={{ title: 'Nearby Pharmacies' }}
           />
         </Stack.Navigator>
       </NavigationContainer>
