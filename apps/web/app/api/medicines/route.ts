@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getPaginationParams, paginateResponse } from '@/lib/api-utils';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -8,7 +9,7 @@ export async function GET(request: Request) {
   const id = searchParams.get('id');
 
   if (!supabase) {
-    return NextResponse.json([]);
+    return NextResponse.json(id ? null : paginateResponse([], 0, 1, 20));
   }
 
   if (id) {
@@ -25,9 +26,11 @@ export async function GET(request: Request) {
     return NextResponse.json(data);
   }
 
+  const { page, limit, offset } = getPaginationParams(searchParams);
+
   let query = supabase
     .from('medicines')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('brand_name');
 
   if (search) {
@@ -38,11 +41,13 @@ export async function GET(request: Request) {
     query = query.contains('conditions', [condition]);
   }
 
-  const { data, error } = await query;
+  query = query.range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(paginateResponse(data || [], count || 0, page, limit));
 }

@@ -90,37 +90,73 @@ export async function getPricesForMedicine(medicineId: string) {
 }
 
 export async function verifyMedicine(scannedCode: string) {
-  // Try to find medicine by barcode first
-  let { data: medicine } = await supabase
-    .from('medicines')
-    .select('*')
-    .eq('barcode', scannedCode)
-    .single();
+  try {
+    // Try to find medicine by barcode first
+    const barcodeResult = await supabase
+      .from('medicines')
+      .select('*')
+      .eq('barcode', scannedCode)
+      .single();
 
-  // If not found by barcode, try by FDA registration number
-  if (!medicine) {
-    const result = await supabase
+    if (barcodeResult.error && barcodeResult.error.code !== 'PGRST116') {
+      throw barcodeResult.error;
+    }
+
+    if (barcodeResult.data) {
+      await logVerification(supabase, scannedCode, barcodeResult.data.id, 'found');
+      return {
+        status: 'found',
+        message: 'Product verified as FDA-registered',
+        medicine: barcodeResult.data,
+      };
+    }
+
+    // If not found by barcode, try by FDA registration number
+    const fdaResult = await supabase
       .from('medicines')
       .select('*')
       .eq('fda_registration_number', scannedCode)
       .single();
-    
-    medicine = result.data;
+
+    if (fdaResult.error && fdaResult.error.code !== 'PGRST116') {
+      throw fdaResult.error;
+    }
+
+    if (fdaResult.data) {
+      await logVerification(supabase, scannedCode, fdaResult.data.id, 'found');
+      return {
+        status: 'found',
+        message: 'Product verified as FDA-registered',
+        medicine: fdaResult.data,
+      };
+    }
+
+    // Log not found
+    await logVerification(supabase, scannedCode, null, 'not_found');
+    return {
+      status: 'not_found',
+      message: 'Product not found in FDA registry. Please verify manually or report.',
+      medicine: null,
+    };
+  } catch (error) {
+    console.error('Verification failed:', error);
+    return {
+      status: 'error',
+      message: 'Verification service unavailable. Please try again.',
+      medicine: null,
+    };
   }
+}
 
-  // Log the verification attempt
-  await supabase.from('verification_records').insert({
-    scanned_code: scannedCode,
-    medicine_id: medicine?.id || null,
-    match_result: medicine ? 'found' : 'not_found',
-    fda_data: medicine || null,
-  });
-
-  return {
-    status: medicine ? 'found' : 'not_found',
-    message: medicine
-      ? 'Product verified as FDA-registered'
-      : 'Product not found in FDA registry. Please verify manually or report.',
-    medicine,
-  };
+async function logVerification(supabase: any, code: string, medicineId: string | null, result: string) {
+  try {
+    await supabase.from('verification_records').insert({
+      scanned_code: code,
+      medicine_id: medicineId,
+      match_result: result,
+      fda_data: null,
+    });
+  } catch {
+    // Don't fail verification if logging fails
+  }
 }

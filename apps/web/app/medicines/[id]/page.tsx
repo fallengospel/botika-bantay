@@ -35,6 +35,7 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [prices, setPrices] = useState<Price[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMedicineDetails();
@@ -42,8 +43,12 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
 
   const fetchMedicineDetails = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/prices?medicineId=${params.id}`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const data = await response.json();
       
       if (data.length > 0 && data[0].medicine) {
@@ -51,15 +56,21 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
         setPrices(data);
       } else {
         const medResponse = await fetch(`/api/medicines?id=${params.id}`);
+        if (!medResponse.ok) {
+          throw new Error(`Server error: ${medResponse.status}`);
+        }
         const medData = await medResponse.json();
         const found = Array.isArray(medData) ? medData[0] : medData;
         if (found) {
           setMedicine(found);
           setPrices([]);
+        } else {
+          setError('not_found');
         }
       }
-    } catch (error) {
-      console.error('Failed to fetch medicine details:', error);
+    } catch (err) {
+      console.error('Failed to fetch medicine details:', err);
+      setError('network');
     } finally {
       setLoading(false);
     }
@@ -73,12 +84,36 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
     );
   }
 
-  if (!medicine) {
+  if (error) {
     return (
       <main className="flex-1 bg-surface-50 flex items-center justify-center">
-        <p className="text-surface-600">Medicine not found</p>
+        <div className="text-center">
+          {error === 'not_found' ? (
+            <>
+              <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
+              <p className="text-surface-600 font-medium">Medicine not found</p>
+              <p className="text-sm text-surface-500 mt-1">This medicine may not be in our database yet.</p>
+            </>
+          ) : (
+            <>
+              <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+              <p className="text-surface-600 font-medium">Unable to load medicine details</p>
+              <p className="text-sm text-surface-500 mt-1">Please check your connection and try again.</p>
+            </>
+          )}
+          <button
+            onClick={fetchMedicineDetails}
+            className="mt-4 text-primary-600 hover:text-primary-700 text-sm font-medium"
+          >
+            Try Again
+          </button>
+        </div>
       </main>
     );
+  }
+
+  if (!medicine) {
+    return null;
   }
 
   const sortedPrices = [...prices].sort((a, b) => a.price - b.price);

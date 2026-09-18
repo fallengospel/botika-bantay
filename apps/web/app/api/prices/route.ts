@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { checkRateLimit } from '@/lib/api-utils';
 
 const OUTLIER_THRESHOLD = 0.40;
 const DAILY_SUBMISSION_LIMIT = 10;
@@ -66,6 +67,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!supabase) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+  }
+
+  // Rate limit: 20 price submissions per minute per IP
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const rateLimit = checkRateLimit(`price:${ip}`, 20, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
 
   let body;
