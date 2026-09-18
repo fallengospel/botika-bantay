@@ -45,10 +45,10 @@ export default function SubmitPricePage() {
     if (searchQuery.trim().length >= 2) {
       const timer = setTimeout(async () => {
         try {
-          const res = await fetch(`/api/medicines?search=${encodeURIComponent(searchQuery)}`);
+          const res = await fetch(`/api/medicines?search=${encodeURIComponent(searchQuery)}&limit=8`);
           if (res.ok) {
-            const data = await res.json();
-            setMedicines(data.slice(0, 8));
+            const result = await res.json();
+            setMedicines(result.data || []);
           }
         } catch {}
       }, 300);

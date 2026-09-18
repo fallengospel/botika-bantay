@@ -39,8 +39,8 @@ function MedicinesContent() {
         ? `/api/medicines?search=${encodeURIComponent(search)}`
         : '/api/medicines';
       const response = await fetch(url);
-      const data = await response.json();
-      setMedicines(data);
+      const result = await response.json();
+      setMedicines(result.data || []);
     } catch (error) {
       console.error('Failed to fetch medicines:', error);
     } finally {
