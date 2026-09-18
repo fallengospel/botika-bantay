@@ -23,9 +23,9 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
           <Pill className="w-6 h-6 text-primary-600" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900">{medicine.brand_name}</h3>
-          <p className="text-sm text-gray-600">{medicine.generic_name}</p>
-          <p className="text-xs text-gray-500 mt-1">
+          <h3 className="font-semibold text-surface-900">{medicine.brand_name}</h3>
+          <p className="text-sm text-surface-600">{medicine.generic_name}</p>
+          <p className="text-xs text-surface-500 mt-1">
             {medicine.dosage_form} • {medicine.strength} • {medicine.manufacturer}
           </p>
         </div>

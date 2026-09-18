@@ -5,9 +5,24 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get('search');
   const condition = searchParams.get('condition');
+  const id = searchParams.get('id');
 
   if (!supabase) {
     return NextResponse.json([]);
+  }
+
+  if (id) {
+    const { data, error } = await supabase
+      .from('medicines')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
   }
 
   let query = supabase

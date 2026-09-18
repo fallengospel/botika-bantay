@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Pill } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import SearchBar from '@/components/search/SearchBar';
@@ -15,19 +16,26 @@ interface Medicine {
   manufacturer: string;
 }
 
-export default function MedicinesPage() {
+function MedicinesContent() {
+  const searchParams = useSearchParams();
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMedicines();
-  }, []);
+    const q = searchParams.get('search');
+    if (q) {
+      setSearchQuery(q);
+      fetchMedicines(q);
+    } else {
+      fetchMedicines();
+    }
+  }, [searchParams]);
 
   const fetchMedicines = async (search?: string) => {
     setLoading(true);
     try {
-      const url = search 
+      const url = search
         ? `/api/medicines?search=${encodeURIComponent(search)}`
         : '/api/medicines';
       const response = await fetch(url);
@@ -46,9 +54,9 @@ export default function MedicinesPage() {
   };
 
   return (
-    <main className="flex-1 bg-gray-50">
-      <Header 
-        title="Presyo Check" 
+    <>
+      <Header
+        title="Presyo Check"
         subtitle="Compare medicine prices across pharmacies"
         backHref="/"
         backLabel="Back to Home"
@@ -67,12 +75,12 @@ export default function MedicinesPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading medicines...</p>
+            <p className="mt-4 text-surface-600">Loading medicines...</p>
           </div>
         ) : medicines.length === 0 ? (
           <div className="text-center py-12">
-            <Pill className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">No medicines found</p>
+            <Pill className="w-16 h-16 text-surface-300 mx-auto mb-4" />
+            <p className="text-surface-600">No medicines found</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -82,6 +90,20 @@ export default function MedicinesPage() {
           </div>
         )}
       </div>
+    </>
+  );
+}
+
+export default function MedicinesPage() {
+  return (
+    <main className="flex-1 bg-surface-50">
+      <Suspense fallback={
+        <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      }>
+        <MedicinesContent />
+      </Suspense>
     </main>
   );
 }

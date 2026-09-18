@@ -82,7 +82,7 @@ export default function NearbyPage() {
   };
 
   return (
-    <main className="flex-1 bg-gray-50">
+    <main className="flex-1 bg-surface-50">
       <Header 
         title="Nearby Pharmacies" 
         subtitle="Find pharmacies near your location"
@@ -94,12 +94,12 @@ export default function NearbyPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Finding nearby pharmacies...</p>
+            <p className="mt-4 text-surface-600">Finding nearby pharmacies...</p>
           </div>
         ) : locationError ? (
           <div className="text-center py-12">
             <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">{locationError}</p>
+            <p className="text-surface-600 mb-4">{locationError}</p>
             <button
               onClick={getUserLocation}
               className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700"
@@ -109,8 +109,8 @@ export default function NearbyPage() {
           </div>
         ) : branches.length === 0 ? (
           <div className="text-center py-12">
-            <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">No pharmacies found nearby</p>
+            <MapPin className="w-16 h-16 text-surface-300 mx-auto mb-4" />
+            <p className="text-surface-600">No pharmacies found nearby</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -137,10 +137,10 @@ export default function NearbyPage() {
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: branch.chain.color }}
                         ></span>
-                        <h3 className="font-semibold text-gray-900">{branch.chain.name}</h3>
+                        <h3 className="font-semibold text-surface-900">{branch.chain.name}</h3>
                       </div>
-                      <p className="text-sm text-gray-600">{branch.name}</p>
-                      <p className="text-xs text-gray-500 mt-1">{branch.address}</p>
+                      <p className="text-sm text-surface-600">{branch.name}</p>
+                      <p className="text-xs text-surface-500 mt-1">{branch.address}</p>
                       {distance !== null && (
                         <p className="text-xs text-primary-600 mt-2 font-medium">
                           {distance.toFixed(1)} km away

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
-  ShieldCheck, ArrowLeft, Search, MapPin, Coins, 
-  Camera, CheckCircle2, AlertTriangle, Info, Send, Loader2
+  ArrowLeft, Search, MapPin, Coins, 
+  CheckCircle2, AlertTriangle, Info, Send, Loader2
 } from 'lucide-react';
 
 interface Medicine {
@@ -34,12 +34,12 @@ export default function SubmitPricePage() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [price, setPrice] = useState('');
-  const [notes, setNotes] = useState('');
   const [outlierWarning, setOutlierWarning] = useState<{ isOutlier: boolean; median: number; deviation: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [dailyRemaining, setDailyRemaining] = useState<number | null>(null);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (searchQuery.trim().length >= 2) {
@@ -75,22 +75,35 @@ export default function SubmitPricePage() {
     setStep(3);
   };
 
-  const checkOutlier = useCallback(async () => {
-    if (!selectedMedicine || !selectedBranch || !price || parseFloat(price) <= 0) return;
+  const checkOutlier = useCallback(async (priceValue: number) => {
+    if (!selectedMedicine) return;
     try {
       const res = await fetch(
-        `/api/prices/check-outlier?medicineId=${selectedMedicine.id}&price=${parseFloat(price)}`
+        `/api/prices/check-outlier?medicineId=${selectedMedicine.id}&price=${priceValue}`
       );
       if (res.ok) {
         const data = await res.json();
         setOutlierWarning(data);
       }
     } catch {}
-  }, [selectedMedicine, selectedBranch, price]);
+  }, [selectedMedicine]);
+
+  const handlePriceChange = (value: string) => {
+    setPrice(value);
+    const numVal = parseFloat(value);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (numVal > 0) {
+      debounceTimer.current = setTimeout(() => checkOutlier(numVal), 500);
+    } else {
+      setOutlierWarning(null);
+    }
+  };
 
   useEffect(() => {
-    if (step === 3) checkOutlier();
-  }, [price, step, checkOutlier]);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,7 +219,7 @@ export default function SubmitPricePage() {
             <p className="text-sm text-surface-500 mb-6">I-search at piliin ang gamot na gusto mong i-submit ang presyo.</p>
             
             <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-surface-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
               <input
                 type="text"
                 placeholder="Search by brand or generic name..."
@@ -283,13 +296,13 @@ export default function SubmitPricePage() {
               <div>
                 <label className="input-label">Price (₱)</label>
                 <div className="relative">
-                  <Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-surface-400" />
+                  <Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
                   <input
                     type="number"
                     step="0.01"
                     min="0.01"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={(e) => handlePriceChange(e.target.value)}
                     placeholder="0.00"
                     className="input-field pl-10 text-lg font-semibold"
                     autoFocus

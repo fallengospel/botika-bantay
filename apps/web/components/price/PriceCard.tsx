@@ -28,7 +28,7 @@ export default function PriceCard({ price, isLowest }: PriceCardProps) {
       className={`p-4 rounded-lg border ${
         isLowest
           ? 'border-primary-200 bg-primary-50'
-          : 'border-gray-200 bg-white'
+          : 'border-surface-200 bg-white'
       }`}
     >
       <div className="flex items-start justify-between">
@@ -38,7 +38,7 @@ export default function PriceCard({ price, isLowest }: PriceCardProps) {
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: price.branch.chain.color }}
             ></span>
-            <span className="font-medium text-gray-900">
+            <span className="font-medium text-surface-900">
               {price.branch.chain.name}
             </span>
             {isLowest && (
@@ -47,21 +47,21 @@ export default function PriceCard({ price, isLowest }: PriceCardProps) {
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-600 flex items-center gap-1">
+          <p className="text-sm text-surface-600 flex items-center gap-1">
             <MapPin className="w-4 h-4" />
             {price.branch.name} - {price.branch.address}
           </p>
-          <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 mt-2 text-xs text-surface-500">
             <Clock className="w-4 h-4" />
             Updated: {new Date(price.last_updated).toLocaleDateString()}
             <StalenessBadge lastUpdated={price.last_updated} />
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold text-gray-900">
+          <p className="text-xl font-bold text-surface-900">
             {formatPrice(price.price)}
           </p>
-          <p className="text-xs text-gray-500 capitalize">
+          <p className="text-xs text-surface-500 capitalize">
             {price.source_type}
           </p>
         </div>

@@ -1,16 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Flag, AlertTriangle, CheckCircle2, Camera, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, CheckCircle2, Send, Loader2 } from 'lucide-react';
 
-export default function ReportPage() {
+function ReportContent() {
+  const searchParams = useSearchParams();
   const [code, setCode] = useState('');
   const [description, setDescription] = useState('');
   const [medicineName, setMedicineName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const urlCode = searchParams.get('code');
+    if (urlCode) setCode(urlCode);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,5 +177,17 @@ export default function ReportPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function ReportPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-surface-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    }>
+      <ReportContent />
+    </Suspense>
   );
 }

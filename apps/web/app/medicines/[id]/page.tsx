@@ -50,9 +50,9 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
         setMedicine(data[0].medicine);
         setPrices(data);
       } else {
-        const medResponse = await fetch(`/api/medicines?search=`);
+        const medResponse = await fetch(`/api/medicines?id=${params.id}`);
         const medData = await medResponse.json();
-        const found = medData.find((m: any) => m.id === params.id);
+        const found = Array.isArray(medData) ? medData[0] : medData;
         if (found) {
           setMedicine(found);
           setPrices([]);
@@ -67,7 +67,7 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
 
   if (loading) {
     return (
-      <main className="flex-1 bg-gray-50 flex items-center justify-center">
+      <main className="flex-1 bg-surface-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </main>
     );
@@ -75,8 +75,8 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
 
   if (!medicine) {
     return (
-      <main className="flex-1 bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Medicine not found</p>
+      <main className="flex-1 bg-surface-50 flex items-center justify-center">
+        <p className="text-surface-600">Medicine not found</p>
       </main>
     );
   }
@@ -87,7 +87,7 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
   const savings = highestPrice - lowestPrice;
 
   return (
-    <main className="flex-1 bg-gray-50">
+    <main className="flex-1 bg-surface-50">
       <Header 
         title={medicine.brand_name}
         subtitle={medicine.generic_name}
@@ -98,22 +98,22 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Medicine Info */}
         <div className="card mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Medicine Information</h2>
+          <h2 className="font-semibold text-surface-900 mb-4">Medicine Information</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-500">Dosage Form</span>
+              <span className="text-surface-500">Dosage Form</span>
               <p className="font-medium">{medicine.dosage_form}</p>
             </div>
             <div>
-              <span className="text-gray-500">Strength</span>
+              <span className="text-surface-500">Strength</span>
               <p className="font-medium">{medicine.strength}</p>
             </div>
             <div>
-              <span className="text-gray-500">Manufacturer</span>
+              <span className="text-surface-500">Manufacturer</span>
               <p className="font-medium">{medicine.manufacturer}</p>
             </div>
             <div>
-              <span className="text-gray-500">FDA Registration</span>
+              <span className="text-surface-500">FDA Registration</span>
               <p className="font-medium">{medicine.fda_registration_number}</p>
             </div>
           </div>
@@ -138,15 +138,15 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
 
         {/* Price List */}
         <div className="card">
-          <h2 className="font-semibold text-gray-900 mb-4">
+          <h2 className="font-semibold text-surface-900 mb-4">
             Prices ({prices.length} pharmacies)
           </h2>
           
           {prices.length === 0 ? (
             <div className="text-center py-8">
-              <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-600">No prices available yet</p>
-              <p className="text-sm text-gray-500 mt-1">
+              <AlertTriangle className="w-12 h-12 text-surface-300 mx-auto mb-3" />
+              <p className="text-surface-600">No prices available yet</p>
+              <p className="text-sm text-surface-500 mt-1">
                 Be the first to submit a price!
               </p>
             </div>
