@@ -5,34 +5,46 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const lat = searchParams.get('lat');
   const lng = searchParams.get('lng');
-  const radius = parseFloat(searchParams.get('radius') || '10'); // Default 10km
+  const radius = parseFloat(searchParams.get('radius') || '10');
 
   if (!supabase) {
     return NextResponse.json([]);
   }
 
-  let query = supabase
+  const { data: branches, error } = await supabase
     .from('pharmacy_branches')
-    .select(`
-      *,
-      chain:pharmacy_chains(*)
-    `)
+    .select('*')
     .order('name');
-
-  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+  if (!branches || branches.length === 0) {
+    return NextResponse.json([]);
+  }
+
+  // Manual join: fetch chains
+  const chainIds = [...new Set(branches.map(b => b.chain_id))];
+  const { data: chains } = await supabase
+    .from('pharmacy_chains')
+    .select('*')
+    .in('id', chainIds);
+
+  const chainsMap = new Map((chains || []).map(c => [c.id, c]));
+
+  const enriched = branches.map(b => ({
+    ...b,
+    chain: chainsMap.get(b.chain_id) || null,
+  }));
 
   if (!lat || !lng) {
-    return NextResponse.json(data || []);
+    return NextResponse.json(enriched);
   }
 
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
 
-  const branchesWithDistance = (data || []).map((branch) => {
+  const branchesWithDistance = enriched.map((branch) => {
     const distance = calculateDistance(userLat, userLng, branch.latitude, branch.longitude);
     return { ...branch, distance };
   });

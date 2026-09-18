@@ -13,30 +13,54 @@ export async function GET(request: Request) {
     return NextResponse.json([]);
   }
 
+  // Fetch prices without joins
   let query = supabase
     .from('prices')
-    .select(`
-      *,
-      medicine:medicines(*),
-      branch:pharmacy_branches(*, chain:pharmacy_chains(*))
-    `)
+    .select('*')
     .order('price');
 
   if (medicineId) {
     query = query.eq('medicine_id', medicineId);
   }
-
   if (branchId) {
     query = query.eq('branch_id', branchId);
   }
 
-  const { data, error } = await query;
-
+  const { data: prices, error } = await query;
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+  if (!prices || prices.length === 0) {
+    return NextResponse.json([]);
+  }
 
-  return NextResponse.json(data);
+  // Manual join: fetch medicines and branches
+  const medicineIds = [...new Set(prices.map(p => p.medicine_id))];
+  const branchIds = [...new Set(prices.map(p => p.branch_id))];
+
+  const [medsResult, branchesResult] = await Promise.all([
+    supabase.from('medicines').select('*').in('id', medicineIds),
+    supabase.from('pharmacy_branches').select('*').in('id', branchIds),
+  ]);
+
+  const medicinesMap = new Map((medsResult.data || []).map(m => [m.id, m]));
+  const branchesMap = new Map((branchesResult.data || []).map(b => [b.id, b]));
+
+  // Fetch chains for branches
+  const chainIds = [...new Set((branchesResult.data || []).map(b => b.chain_id))];
+  const { data: chains } = await supabase.from('pharmacy_chains').select('*').in('id', chainIds);
+  const chainsMap = new Map((chains || []).map(c => [c.id, c]));
+
+  const enriched = prices.map(p => ({
+    ...p,
+    medicine: medicinesMap.get(p.medicine_id) || null,
+    branch: {
+      ...(branchesMap.get(p.branch_id) || {}),
+      chain: chainsMap.get((branchesMap.get(p.branch_id) || {}).chain_id) || null,
+    },
+  }));
+
+  return NextResponse.json(enriched);
 }
 
 export async function POST(request: Request) {

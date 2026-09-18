@@ -12,29 +12,44 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('price_submissions')
-    .select(`
-      *,
-      medicine:medicines(brand_name, generic_name),
-      branch:pharmacy_branches(name, chain:pharmacy_chains(name))
-    `)
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(100);
 
   if (status !== 'all') {
     query = query.eq('moderation_status', status);
   }
-
   if (outliers) {
     query = query.eq('outlier_flag', true);
   }
 
-  const { data, error } = await query;
-
+  const { data: submissions, error } = await query;
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+  if (!submissions || submissions.length === 0) {
+    return NextResponse.json([]);
+  }
 
-  return NextResponse.json(data || []);
+  // Manual join
+  const medicineIds = [...new Set(submissions.map(s => s.medicine_id))];
+  const branchIds = [...new Set(submissions.map(s => s.branch_id))];
+
+  const [medsResult, branchesResult] = await Promise.all([
+    supabase.from('medicines').select('id, brand_name, generic_name').in('id', medicineIds),
+    supabase.from('pharmacy_branches').select('id, name').in('id', branchIds),
+  ]);
+
+  const medsMap = new Map((medsResult.data || []).map(m => [m.id, m]));
+  const branchesMap = new Map((branchesResult.data || []).map(b => [b.id, b]));
+
+  const enriched = submissions.map(s => ({
+    ...s,
+    medicine: medsMap.get(s.medicine_id) || null,
+    branch: branchesMap.get(s.branch_id) || null,
+  }));
+
+  return NextResponse.json(enriched);
 }
 
 export async function PATCH(request: Request) {
