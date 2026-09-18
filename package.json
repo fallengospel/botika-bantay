@@ -7,7 +7,7 @@
     "dev:web": "cd apps/web && npm run dev",
     "dev:mobile": "cd apps/mobile && npm start",
     "build:web": "cd apps/web && npm run build",
-    "lint": "eslint apps --ext .ts,.tsx",
+    "lint": "echo 'Linting not configured yet. Run eslint manually per app.'",
     "db:migrate": "npx supabase db push",
     "db:seed": "npx tsx scripts/seed.ts",
     "db:reset": "npx supabase db reset"

@@ -19,6 +19,7 @@ export default function SearchBar({ value, onChange, onSubmit, placeholder }: Se
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="input-field pl-12"
+        aria-label="Search medicines"
       />
     </form>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,17 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import { Pill, AlertTriangle } from 'lucide-react';
 import { getMedicines } from '../services/supabase';
 import SearchBar from '../components/search/SearchBar';
 import MedicineCard from '../components/search/MedicineCard';
+import { NavigationProp } from '../types/navigation';
+
+interface Props {
+  navigation: NavigationProp;
+}
 
 interface Medicine {
   id: string;
@@ -21,10 +27,11 @@ interface Medicine {
   manufacturer: string;
 }
 
-export default function MedicinesScreen({ navigation }: any) {
+export default function MedicinesScreen({ navigation }: Props) {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,8 +49,14 @@ export default function MedicinesScreen({ navigation }: any) {
       setError('Failed to load medicines. Please check your connection and try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchMedicines(searchQuery || undefined);
+  }, [searchQuery]);
 
   const handleSearch = () => {
     fetchMedicines(searchQuery);
@@ -89,6 +102,14 @@ export default function MedicinesScreen({ navigation }: any) {
           renderItem={renderMedicine}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#16a34a']}
+              tintColor="#16a34a"
+            />
+          }
         />
       )}
     </View>

@@ -5,11 +5,17 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { CheckCircle } from 'lucide-react';
 import { getMedicineById, getPricesForMedicine } from '../services/supabase';
 import { formatPrice } from '@botika-bantay/shared';
 import PriceCard from '../components/price/PriceCard';
+import { MedicineDetailRouteProp } from '../types/navigation';
+
+interface Props {
+  route: MedicineDetailRouteProp;
+}
 
 interface Medicine {
   id: string;
@@ -37,18 +43,20 @@ interface Price {
   };
 }
 
-export default function MedicineDetailScreen({ route }: any) {
+export default function MedicineDetailScreen({ route }: Props) {
   const { id } = route.params;
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [prices, setPrices] = useState<Price[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchMedicineDetails();
   }, [id]);
 
-  const fetchMedicineDetails = async () => {
-    setLoading(true);
+  const fetchMedicineDetails = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     try {
       const medicineData = await getMedicineById(id);
       setMedicine(medicineData);
@@ -59,6 +67,7 @@ export default function MedicineDetailScreen({ route }: any) {
       console.error('Failed to fetch medicine details:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -84,7 +93,17 @@ export default function MedicineDetailScreen({ route }: any) {
   const savings = highestPrice - lowestPrice;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => fetchMedicineDetails(true)}
+          colors={['#16a34a']}
+          tintColor="#16a34a"
+        />
+      }
+    >
       {/* Medicine Info */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Medicine Information</Text>

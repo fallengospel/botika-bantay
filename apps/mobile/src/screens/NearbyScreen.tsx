@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import { MapPin, Navigation, AlertTriangle } from 'lucide-react';
 import * as Location from 'expo-location';
 import { supabase } from '../services/supabase';
+import { NavigationProp } from '../types/navigation';
+
+interface Props {
+  navigation: NavigationProp;
+}
 
 interface PharmacyBranch {
   id: string;
@@ -31,6 +37,7 @@ interface PharmacyBranch {
 export default function NearbyScreen() {
   const [branches, setBranches] = useState<PharmacyBranch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,8 +84,15 @@ export default function NearbyScreen() {
       setLocationError('Failed to load pharmacy data. Please try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setLocationError(null);
+    getUserLocation();
+  }, []);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371;
@@ -143,6 +157,14 @@ export default function NearbyScreen() {
           renderItem={renderBranch}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#16a34a']}
+              tintColor="#16a34a"
+            />
+          }
         />
       )}
     </View>

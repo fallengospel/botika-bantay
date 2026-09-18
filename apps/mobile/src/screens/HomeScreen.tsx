@@ -8,8 +8,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TrendingDown, ShieldCheck, Pill, MapPin } from 'lucide-react';
+import { NavigationProp } from '../types/navigation';
 
-export default function HomeScreen({ navigation }: any) {
+interface Props {
+  navigation: NavigationProp;
+}
+
+export default function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>

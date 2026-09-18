@@ -9,8 +9,13 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ShieldCheck, X } from 'lucide-react';
 import { verifyMedicine } from '../services/supabase';
+import { NavigationProp } from '../types/navigation';
 
-export default function ScannerScreen({ navigation }: any) {
+interface Props {
+  navigation: NavigationProp;
+}
+
+export default function ScannerScreen({ navigation }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [verifying, setVerifying] = useState(false);

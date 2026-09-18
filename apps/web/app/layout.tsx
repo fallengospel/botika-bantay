@@ -37,7 +37,13 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <div className="min-h-screen flex flex-col bg-surface-50">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-primary-600 focus:font-medium"
+        >
+          Skip to content
+        </a>
+        <div className="min-h-screen flex flex-col bg-surface-50" id="main-content">
           {children}
         </div>
         <script
@@ -45,8 +51,7 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js')
-                    .catch(() => {});
+                  navigator.serviceWorker.register('/sw.js').catch(() => {});
                 });
               }
             `,

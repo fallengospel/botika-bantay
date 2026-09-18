@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RootStackParamList } from './src/types/navigation';
 
 import HomeScreen from './src/screens/HomeScreen';
 import MedicinesScreen from './src/screens/MedicinesScreen';
@@ -10,7 +11,7 @@ import MedicineDetailScreen from './src/screens/MedicineDetailScreen';
 import ScannerScreen from './src/screens/ScannerScreen';
 import NearbyScreen from './src/screens/NearbyScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
