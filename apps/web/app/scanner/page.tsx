@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Search, ShieldCheck, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Search, ShieldCheck, CheckCircle, XCircle, AlertTriangle, Flag, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface Medicine {
@@ -43,29 +43,33 @@ export default function ScannerPage() {
   };
 
   return (
-    <main className="flex-1 bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="max-w-4xl mx-auto">
-          <Link href="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4">
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Home</span>
+    <main className="flex-1 bg-surface-50">
+      <div className="bg-white border-b border-surface-100">
+        <div className="page-container py-6">
+          <Link href="/" className="flex items-center gap-2 text-surface-600 hover:text-surface-900 mb-4">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Tunay Check</h1>
-          <p className="text-gray-600">Verify if medicine is FDA-registered and authentic</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-medical-500 to-blue-500 text-white shadow-glow-medical">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h1 className="heading-2">Tunay Check</h1>
+          </div>
+          <p className="text-surface-600">Verify if medicine is FDA-registered and authentic</p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="page-container max-w-3xl py-8">
         {/* Manual Lookup */}
-        <div className="card mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Manual Verification</h2>
-          <p className="text-sm text-gray-600 mb-4">
+        <div className="card-elevated mb-6">
+          <h2 className="font-semibold text-surface-900 mb-2">Manual Verification</h2>
+          <p className="text-sm text-surface-500 mb-4">
             Enter the barcode number, QR code data, or FDA registration number to verify a product.
           </p>
           <form onSubmit={handleVerify} className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-surface-400" />
               <input
                 type="text"
                 placeholder="Enter barcode, QR code, or FDA registration #"
@@ -77,70 +81,97 @@ export default function ScannerPage() {
             <button
               type="submit"
               disabled={loading || !searchCode.trim()}
-              className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="btn-primary"
             >
-              {loading ? 'Verifying...' : 'Verify'}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Verifying...
+                </span>
+              ) : (
+                'Verify'
+              )}
             </button>
           </form>
         </div>
 
         {/* Result */}
         {result && (
-          <div className={`card ${result.status === 'found' ? 'border-green-200 bg-green-50' : result.status === 'not_found' ? 'border-yellow-200 bg-yellow-50' : 'border-red-200 bg-red-50'}`}>
+          <div className={`card-elevated mb-6 ${
+            result.status === 'found' ? 'border-l-4 border-l-primary-500 bg-primary-50/30' :
+            result.status === 'not_found' ? 'border-l-4 border-l-amber-500 bg-amber-50/30' :
+            'border-l-4 border-l-danger bg-danger-light/30'
+          }`}>
             <div className="flex items-start gap-4">
               {result.status === 'found' ? (
-                <CheckCircle className="w-8 h-8 text-green-600 mt-1" />
+                <div className="p-2 rounded-lg bg-primary-100 shrink-0">
+                  <CheckCircle className="w-6 h-6 text-primary-600" />
+                </div>
               ) : result.status === 'not_found' ? (
-                <AlertTriangle className="w-8 h-8 text-yellow-600 mt-1" />
+                <div className="p-2 rounded-lg bg-amber-100 shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-amber-600" />
+                </div>
               ) : (
-                <XCircle className="w-8 h-8 text-red-600 mt-1" />
+                <div className="p-2 rounded-lg bg-danger-light shrink-0">
+                  <XCircle className="w-6 h-6 text-danger" />
+                </div>
               )}
               <div className="flex-1">
-                <h3 className={`text-lg font-semibold ${result.status === 'found' ? 'text-green-800' : result.status === 'not_found' ? 'text-yellow-800' : 'text-red-800'}`}>
-                  {result.status === 'found' ? 'Product Verified' : result.status === 'not_found' ? 'Product Not Found' : 'Error'}
+                <h3 className={`text-lg font-semibold ${
+                  result.status === 'found' ? 'text-primary-800' :
+                  result.status === 'not_found' ? 'text-amber-800' : 'text-danger-dark'
+                }`}>
+                  {result.status === 'found' ? 'Product Verified ✓' :
+                   result.status === 'not_found' ? 'Product Not Found' : 'Error'}
                 </h3>
-                <p className={`text-sm ${result.status === 'found' ? 'text-green-700' : result.status === 'not_found' ? 'text-yellow-700' : 'text-red-700'}`}>
+                <p className={`text-sm ${
+                  result.status === 'found' ? 'text-primary-700' :
+                  result.status === 'not_found' ? 'text-amber-700' : 'text-danger'
+                }`}>
                   {result.message}
                 </p>
 
                 {result.medicine && (
-                  <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-                    <h4 className="font-medium text-gray-900 mb-2">Product Details</h4>
+                  <div className="mt-4 p-4 bg-white rounded-xl border border-surface-200">
+                    <h4 className="font-medium text-surface-900 mb-3">Product Details</h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <span className="text-gray-500">Brand Name</span>
-                        <p className="font-medium">{result.medicine.brand_name}</p>
+                        <span className="text-surface-500">Brand Name</span>
+                        <p className="font-medium text-surface-900">{result.medicine.brand_name}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500">Generic Name</span>
-                        <p className="font-medium">{result.medicine.generic_name}</p>
+                        <span className="text-surface-500">Generic Name</span>
+                        <p className="font-medium text-surface-900">{result.medicine.generic_name}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500">Manufacturer</span>
-                        <p className="font-medium">{result.medicine.manufacturer}</p>
+                        <span className="text-surface-500">Manufacturer</span>
+                        <p className="font-medium text-surface-900">{result.medicine.manufacturer}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500">FDA Registration</span>
-                        <p className="font-medium">{result.medicine.fda_registration_number}</p>
+                        <span className="text-surface-500">FDA Registration</span>
+                        <p className="font-medium text-surface-900">{result.medicine.fda_registration_number}</p>
                       </div>
                     </div>
-                    <Link
-                      href={`/medicines/${result.medicine.id}`}
-                      className="mt-4 inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm"
-                    >
-                      View Prices →
-                    </Link>
+                    <div className="flex gap-3 mt-4">
+                      <Link
+                        href={`/medicines/${result.medicine.id}`}
+                        className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                      >
+                        View Prices →
+                      </Link>
+                    </div>
                   </div>
                 )}
 
                 {result.status === 'not_found' && (
                   <div className="mt-4 flex gap-3">
-                    <button
-                      onClick={() => setResult(null)}
-                      className="text-sm text-gray-600 hover:text-gray-900"
+                    <Link
+                      href={`/report?code=${encodeURIComponent(searchCode)}`}
+                      className="btn-outline text-sm"
                     >
-                      Try Another Code
-                    </button>
+                      <Flag className="w-3.5 h-3.5" />
+                      Report Suspicious Product
+                    </Link>
                   </div>
                 )}
               </div>
@@ -149,9 +180,9 @@ export default function ScannerPage() {
         )}
 
         {/* Info */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-          <h3 className="font-medium text-blue-800 mb-2">How to Verify</h3>
-          <ul className="text-sm text-blue-700 space-y-1">
+        <div className="card bg-medical-50 border-medical-200">
+          <h3 className="font-medium text-medical-800 mb-2">How to Verify</h3>
+          <ul className="text-sm text-medical-700 space-y-1.5">
             <li>• Look for the barcode on the medicine packaging</li>
             <li>• Enter the numbers below the barcode</li>
             <li>• Or enter the FDA Registration Number (e.g., FR-XXXX-XXXX)</li>
