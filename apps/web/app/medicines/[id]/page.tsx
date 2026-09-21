@@ -113,7 +113,18 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
   }
 
   if (!medicine) {
-    return null;
+    return (
+      <main className="flex-1 bg-surface-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
+          <p className="text-surface-600 font-medium">Medicine not found</p>
+          <p className="text-sm text-surface-500 mt-1">This medicine may not be in our database yet.</p>
+          <a href="/medicines" className="mt-4 inline-block text-primary-600 hover:text-primary-700 text-sm font-medium">
+            Back to Search
+          </a>
+        </div>
+      </main>
+    );
   }
 
   const sortedPrices = [...prices].sort((a, b) => a.price - b.price);

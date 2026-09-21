@@ -10,7 +10,7 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
   themeColor: '#16a34a',
 };
 
@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="fil" className={inter.variable}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
       </head>

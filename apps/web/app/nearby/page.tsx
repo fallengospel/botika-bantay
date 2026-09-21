@@ -78,7 +78,7 @@ export default function NearbyPage() {
 
   const getDirections = (lat: number, lng: number) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -114,7 +114,13 @@ export default function NearbyPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {branches.map((branch) => {
+            {[...branches]
+              .sort((a, b) => {
+                if (!userLocation) return 0;
+                return calculateDistance(userLocation.lat, userLocation.lng, a.latitude, a.longitude) -
+                       calculateDistance(userLocation.lat, userLocation.lng, b.latitude, b.longitude);
+              })
+              .map((branch) => {
               const distance = userLocation
                 ? calculateDistance(userLocation.lat, userLocation.lng, branch.latitude, branch.longitude)
                 : null;
@@ -150,6 +156,7 @@ export default function NearbyPage() {
                     <button
                       onClick={() => getDirections(branch.latitude, branch.longitude)}
                       className="flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-medium"
+                      aria-label={`Get directions to ${branch.name} ${branch.chain.name}`}
                     >
                       <Navigation className="w-4 h-4" />
                       Directions

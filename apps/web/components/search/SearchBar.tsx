@@ -1,6 +1,6 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 interface SearchBarProps {
   value: string;
@@ -18,9 +18,19 @@ export default function SearchBar({ value, onChange, onSubmit, placeholder }: Se
         placeholder={placeholder || "Search medicine by brand, generic name, or condition..."}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="input-field pl-12"
+        className="input-field pl-12 pr-10"
         aria-label="Search medicines"
       />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
+          aria-label="Clear search"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </form>
   );
 }

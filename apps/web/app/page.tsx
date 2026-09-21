@@ -63,7 +63,7 @@ export default function Home() {
       <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary-50/50 via-white to-surface-50" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-r from-primary-400/20 to-emerald-400/20 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-r from-primary-400/20 to-emerald-400/20 rounded-full blur-3xl" aria-hidden="true" />
         
         <div className="page-container relative">
           <div className="max-w-4xl mx-auto text-center">
@@ -372,7 +372,7 @@ export default function Home() {
               },
             ].map((testimonial, i) => (
               <div key={i} className="card p-6">
-                <div className="flex gap-1 mb-4">
+                <div className="flex gap-1 mb-4" role="img" aria-label={`${testimonial.stars} out of 5 stars`}>
                   {[...Array(testimonial.stars)].map((_, j) => (
                     <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
@@ -461,9 +461,9 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="hover:text-primary-400 transition-colors">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-primary-400 transition-colors">Terms of Service</Link></li>
-                <li><Link href="#" className="hover:text-primary-400 transition-colors">FDA Disclaimer</Link></li>
+                <li>Privacy Policy</li>
+                <li>Terms of Service</li>
+                <li>FDA Disclaimer</li>
               </ul>
             </div>
           </div>

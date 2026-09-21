@@ -33,6 +33,9 @@ export default function ScannerPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scannedCode: searchCode.trim() }),
       });
+      if (!response.ok) {
+        throw new Error(`Verification failed (${response.status})`);
+      }
       const data = await response.json();
       setResult(data);
     } catch (error) {
@@ -76,6 +79,7 @@ export default function ScannerPage() {
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 className="input-field pl-10"
+                aria-label="Barcode, QR code, or FDA registration number"
               />
             </div>
             <button
@@ -97,7 +101,7 @@ export default function ScannerPage() {
 
         {/* Result */}
         {result && (
-          <div className={`card-elevated mb-6 ${
+          <div role="status" aria-live="polite" className={`card-elevated mb-6 ${
             result.status === 'found' ? 'border-l-4 border-l-primary-500 bg-primary-50/30' :
             result.status === 'not_found' ? 'border-l-4 border-l-amber-500 bg-amber-50/30' :
             'border-l-4 border-l-danger bg-danger-light/30'

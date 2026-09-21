@@ -50,7 +50,9 @@ export default function SubmitPricePage() {
             const result = await res.json();
             setMedicines(result.data || []);
           }
-        } catch {}
+        } catch {
+          setMedicines([]);
+        }
       }, 300);
       return () => clearTimeout(timer);
     } else {
@@ -67,7 +69,9 @@ export default function SubmitPricePage() {
         const data = await res.json();
         setBranches(data);
       }
-    } catch {}
+    } catch {
+      setError('Failed to load pharmacy branches. Please try again.');
+    }
   };
 
   const selectBranch = (branch: Branch) => {
@@ -85,7 +89,9 @@ export default function SubmitPricePage() {
         const data = await res.json();
         setOutlierWarning(data);
       }
-    } catch {}
+    } catch {
+      setOutlierWarning(null);
+    }
   }, [selectedMedicine]);
 
   const handlePriceChange = (value: string) => {
@@ -227,6 +233,7 @@ export default function SubmitPricePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="input-field pl-10"
                 autoFocus
+                aria-label="Search medicine by brand or generic name"
               />
             </div>
 

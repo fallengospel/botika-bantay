@@ -10,7 +10,7 @@ interface HeaderProps {
 
 export default function Header({ title, subtitle, backHref, backLabel }: HeaderProps) {
   return (
-    <div className="bg-white border-b border-surface-200 px-4 py-4">
+    <header className="bg-white border-b border-surface-200 px-4 py-4">
       <div className="max-w-4xl mx-auto">
         {backHref && (
           <Link href={backHref} className="flex items-center gap-2 text-surface-600 hover:text-surface-900 mb-4">
@@ -21,6 +21,6 @@ export default function Header({ title, subtitle, backHref, backLabel }: HeaderP
         <h1 className="text-2xl font-bold text-surface-900">{title}</h1>
         {subtitle && <p className="text-surface-600">{subtitle}</p>}
       </div>
-    </div>
+    </header>
   );
 }
