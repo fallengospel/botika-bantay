@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
   Search,
@@ -12,9 +13,21 @@ import {
   Clock,
   X,
   ExternalLink,
+  Camera,
 } from 'lucide-react';
 import Link from 'next/link';
 import { LogoMark } from '@/components/brand/LogoMark';
+import BulkVerify from '@/components/verify/BulkVerify';
+
+const CameraScanner = dynamic(() => import('@/components/verify/CameraScanner'), {
+  ssr: false,
+  loading: () => (
+    <div className="card-elevated mb-6 flex items-center justify-center gap-2 min-h-[200px] text-surface-500">
+      <Loader2 className="w-4 h-4 animate-spin" />
+      Loading camera…
+    </div>
+  ),
+});
 
 interface Medicine {
   id: string;
@@ -101,6 +114,7 @@ export default function ScannerPage() {
   const [result, setResult] = useState<VerifyResult | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [liveHint, setLiveHint] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlightRef = useRef(0);
   const lastQueriedRef = useRef('');
@@ -178,6 +192,17 @@ export default function ScannerPage() {
       if (ticket === inFlightRef.current) setLoading(false);
     }
   }, [loading]);
+
+  const handleCameraScan = useCallback(
+    (decodedText: string) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      setShowCamera(false);
+      setSearchCode(decodedText);
+      setLiveHint(true);
+      void runVerify(decodedText);
+    },
+    [runVerify]
+  );
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,12 +289,13 @@ export default function ScannerPage() {
       </div>
 
       <div className="page-container max-w-3xl py-8">
+        <Suspense fallback={null}>
         {/* How to verify — honest scope */}
         <div className="card bg-medical-50 border-medical-200 mb-6">
           <h3 className="font-medium text-medical-800 mb-2">How to verify</h3>
           <ul className="text-sm text-medical-700 space-y-1.5">
             <li>• Hanapin ang barcode o FDA Registration Number (hal. FR-XXXX-XXXX) sa packaging</li>
-            <li>• I-type ito sa search field — auto-check habang nagta-type ka</li>
+            <li>• I-type ito sa search field, i-paste ang maraming code, o i-scan gamit ang camera</li>
             <li>• Iche-check namin against the BotikaBantay catalog (not a live FDA API)</li>
             <li>
               • Para sa opisyal na lookup, gamitin ang{' '}
@@ -296,6 +322,16 @@ export default function ScannerPage() {
             </div>
             <button
               type="button"
+              onClick={() => setShowCamera((v) => !v)}
+              className="btn-outline text-sm shrink-0 disabled:opacity-40"
+              aria-label={showCamera ? 'Hide camera scanner' : 'Open camera scanner'}
+              disabled={loading}
+            >
+              <Camera className="w-3.5 h-3.5" />
+              {showCamera ? 'Hide camera' : 'Scan camera'}
+            </button>
+            <button
+              type="button"
               onClick={clearInput}
               disabled={!searchCode && !result}
               className="btn-outline text-sm shrink-0 disabled:opacity-40"
@@ -305,6 +341,10 @@ export default function ScannerPage() {
               Clear
             </button>
           </div>
+
+          {showCamera && (
+            <CameraScanner onScan={handleCameraScan} onClose={() => setShowCamera(false)} />
+          )}
 
           <form onSubmit={handleVerify} className="flex gap-3">
             <div className="relative flex-1">
@@ -529,6 +569,22 @@ export default function ScannerPage() {
           )}
         </div>
 
+        {/* Bulk verify (Phase 2) */}
+        <BulkVerify
+          onEachResult={(code, status, brand) => {
+            if (status === 'found' || status === 'not_found' || status === 'ambiguous') {
+              setHistory(
+                pushHistory({
+                  code,
+                  status: status as VerifyResult['status'],
+                  brand,
+                  at: Date.now(),
+                })
+              );
+            }
+          }}
+        />
+
         {/* Recent checks (local, private to this device) */}
         <div className="card-elevated">
           <div className="flex items-center justify-between mb-3">
@@ -587,6 +643,7 @@ export default function ScannerPage() {
             </ul>
           )}
         </div>
+        </Suspense>
       </div>
     </main>
   );
