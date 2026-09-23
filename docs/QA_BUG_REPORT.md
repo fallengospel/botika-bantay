@@ -58,14 +58,14 @@
 | # | Bug | File | Priority |
 |---|-----|------|----------|
 | 28 | No `aria-label` on search inputs | `apps/web/app/page.tsx`, `apps/web/components/search/SearchBar.tsx` | Low |
-| 29 | No skip-to-content link for accessibility | `apps/web/app/layout.tsx` | Low |
-| 30 | `console.log` left in production service worker registration | `apps/web/app/layout.tsx` | Low |
+| 29 | No skip-to-content link for accessibility | `apps/web/app/layout.tsx` | Low | FIXED |
+| 30 | `console.log` left in production service worker registration | `apps/web/app/layout.tsx` | Low | FIXED |
 | 31 | No pull-to-refresh on mobile FlatLists | `apps/mobile/src/screens/MedicinesScreen.tsx` | Low |
-| 32 | All screens use `any` for navigation props - no type safety | `apps/mobile/src/screens/*.tsx` | Low |
+| 32 | All screens use `any` for navigation props - no type safety | `apps/mobile/src/screens/*.tsx` | Low | FIXED (MedicineDetail) |
 | 33 | Mobile `app.json` missing `privacy` key and iOS permission descriptions | `apps/mobile/app.json` | Low |
 | 34 | Expo SDK 50 is outdated (current is 52+) | `apps/mobile/package.json` | Low |
 | 35 | Service worker caches API responses - stale price data possible | `apps/web/public/sw.js` | Low |
-| 36 | Root `lint` script references ESLint without config | `package.json` | Low |
+| 36 | Root `lint` script references ESLint without config | `package.json` | Low | FIXED (runs workspace lint) |
 | 37 | ~~No monorepo `workspaces` field in root `package.json`~~ FIXED | `package.json` | Low |
 
 ---
@@ -100,12 +100,16 @@ TOTAL: 27/28 passed (1 awaiting user RLS fix)
 Run this SQL in Supabase SQL Editor:
 
 ```sql
+-- Run in Supabase SQL Editor (also in supabase/migrations/20260923_production_hardening_v1_4_0.sql)
 DROP POLICY IF EXISTS "Users can insert reports" ON suspicious_product_reports;
+DROP POLICY IF EXISTS "Allow report insert" ON suspicious_product_reports;
 CREATE POLICY "Allow report insert" ON suspicious_product_reports FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can insert price submissions" ON price_submissions;
+DROP POLICY IF EXISTS "Allow price submission insert" ON price_submissions;
 CREATE POLICY "Allow price submission insert" ON price_submissions FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can view own submissions" ON price_submissions;
+DROP POLICY IF EXISTS "Allow view price submissions" ON price_submissions;
 CREATE POLICY "Allow view price submissions" ON price_submissions FOR SELECT USING (true);
 ```

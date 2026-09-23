@@ -7,9 +7,11 @@ A Unified Medicine Price Comparison & Authenticity Verification Platform for the
 ## Features
 
 - **Presyo Check** - Compare medicine prices across major pharmacy chains
-- **Tunay Check** - Verify medicine authenticity via barcode scanning
+- **Tunay Check** - Check barcodes against our FDA-registered product catalog
 - **Nearby Pharmacies** - Find pharmacies near you with the best prices
-- **FDA Verified** - Cross-referenced with FDA Philippines drug registry
+- **Catalog Check** - See if a product is listed in BotikaBantay before you buy
+
+> Catalog lookup only — not a live FDA API. Listed ≠ guaranteed authentic. Official verification: https://www.fda.gov.ph/verification
 
 ## Tech Stack
 

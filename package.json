@@ -12,7 +12,7 @@
     "dev:mobile": "npm run start --workspace @botika-bantay/mobile",
     "build:web": "npm run build --workspace @botika-bantay/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
     "db:migrate": "npx supabase db push",
     "db:seed": "npx tsx scripts/seed.ts",
     "db:reset": "npx supabase db reset"

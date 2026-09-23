@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // 3. Try ilike search across brand_name, generic_name, barcode, fda_registration_number
+  // 3. Fuzzy search across brand/generic/barcode/FDA — QA-009: never auto-pick when >1 match
   if (!medicine && safe) {
     const { data: results } = await supabase
       .from('medicines')
@@ -89,14 +89,27 @@ export async function POST(request: Request) {
       .or(
         `brand_name.ilike.%${safe}%,generic_name.ilike.%${safe}%,barcode.ilike.%${safe}%,fda_registration_number.ilike.%${safe}%`
       )
-      .limit(1);
+      .limit(10);
 
-    if (results && results.length > 0) {
+    if (results && results.length === 1) {
       medicine = results[0];
+    } else if (results && results.length > 1) {
+      // QA-009: ambiguous — do not return an arbitrary single match as "found"
+      await logVerification(supabase, code, null, 'ambiguous');
+      return NextResponse.json({
+        status: 'ambiguous',
+        message: `Found ${results.length} possible matches in our catalog. Please scan again or search by brand/generic name.`,
+        medicine: null,
+        suggestions: results.slice(0, 5).map((m: any) => ({
+          id: m.id,
+          brand_name: m.brand_name,
+          generic_name: m.generic_name,
+        })),
+      });
     }
   }
 
-  // 4. Try partial word match (e.g. "CDRR" matches "Ceterizine" type logic — search each word)
+  // 4. Partial word match (e.g. multi-word search)
   if (!medicine) {
     const words = safe.split(/[\s\-_/]+/).filter((w) => w.length >= 3);
     if (words.length > 0) {

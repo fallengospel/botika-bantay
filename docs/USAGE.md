@@ -30,9 +30,11 @@ A Unified Medicine Price Comparison & Authenticity Verification Platform for the
 BotikaBantay combines two everyday pain points for Filipino consumers — medicine cost and medicine safety — into a single platform. It allows users to:
 
 - **Compare medicine prices** across major Philippine pharmacy chains (Mercury Drug, Watsons, Rose Pharmacy, Generika, South Star Drug)
-- **Verify medicine authenticity** by scanning barcodes/QR codes against the FDA Philippines drug registry
+- **Check barcodes** against BotikaBantay's catalog of FDA-registered products (not a live FDA API)
 - **Find nearby pharmacies** with directions via Google Maps
 - **Save on maintenance medications** by discovering the cheapest available option
+
+> Catalog lookup only — not a live FDA API. Listed ≠ guaranteed authentic. Official verification: https://www.fda.gov.ph/verification
 
 ---
 
@@ -186,7 +188,7 @@ npm run db:seed
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anonymous key (web) |
 | `EXPO_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL (mobile) |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anonymous key (mobile) |
-| `SUPABASE_SERVICE_ROLE_KEY` | For seeding | Supabase service role key (admin) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Seeding + admin moderation | Supabase service role key (admin; required on Vercel for `/api/admin/*` PATCH) |
 
 > **Security Note:** Never commit `.env` to version control. The `.env.example` file is safe to commit.
 

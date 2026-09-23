@@ -30,11 +30,11 @@ export async function GET(request: Request) {
     return NextResponse.json([]);
   }
 
-  // Fetch prices without joins — QA-004: never expose rejected outlier rows publicly
+  // QA-004 + QA-011: public list shows only verified prices (pending is "subject to review")
   let query = supabase
     .from('prices')
     .select('*')
-    .neq('verification_status', 'rejected')
+    .eq('verification_status', 'verified')
     .order('price');
 
   if (medicineId) {

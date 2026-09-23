@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase, verifyUserSession } from '@/lib/supabase';
+import { supabase, supabaseAdmin, verifyUserSession } from '@/lib/supabase';
 
 export async function GET(request: Request) {
   // Auth check
@@ -8,14 +8,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const db = supabaseAdmin ?? supabase;
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || 'all';
 
-  if (!supabase) {
+  if (!db) {
     return NextResponse.json([]);
   }
 
-  let query = supabase
+  let query = db
     .from('suspicious_product_reports')
     .select('*')
     .order('created_at', { ascending: false })
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
   const medicineIds = Array.from(new Set(reports.filter((r: any) => r.medicine_id).map((r: any) => r.medicine_id)));
   let medsMap = new Map();
   if (medicineIds.length > 0) {
-    const { data: meds } = await supabase.from('medicines').select('id, brand_name').in('id', medicineIds);
+    const { data: meds } = await db.from('medicines').select('id, brand_name').in('id', medicineIds);
     medsMap = new Map((meds || []).map(m => [m.id, m]));
   }
 
@@ -56,8 +57,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!supabase) {
-    return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+  if (!supabaseAdmin) {
+    return NextResponse.json(
+      { error: 'Admin moderation requires SUPABASE_SERVICE_ROLE_KEY' },
+      { status: 503 }
+    );
   }
 
   let body;
@@ -68,11 +72,11 @@ export async function PATCH(request: Request) {
   }
 
   const { id, status } = body;
-  if (!id || !status) {
-    return NextResponse.json({ error: 'id and status required' }, { status: 400 });
+  if (!id || !status || !['pending', 'reviewed', 'forwarded_to_fda'].includes(status)) {
+    return NextResponse.json({ error: 'id and valid status required' }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('suspicious_product_reports')
     .update({ moderation_status: status })
     .eq('id', id);
