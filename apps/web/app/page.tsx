@@ -133,7 +133,7 @@ export default function Home() {
             {/* Subheadline — Taglish content */}
             <p className="text-lg sm:text-xl text-brand-muted max-w-2xl mx-auto mb-10 animate-in stagger-2">
               Para sa bawat Pilipinong pamilya: compare prices across Mercury Drug, Watsons, Rose Pharmacy and more —
-              then verify authenticity against the FDA Philippines registry, from Aparri to Jolo.
+              then check codes against our catalog of FDA-registered products, from Aparri to Jolo.
             </p>
 
             {/* Search Bar */}
@@ -215,7 +215,7 @@ export default function Home() {
             <h2 className="heading-2 mb-4 text-brand-ink">Two problems, one solution</h2>
             <p className="text-lg text-brand-muted">
               Ginawa para sa Pilipino, ng Pilipino. You don&apos;t need two apps anymore —
-              price and authenticity, nandito na lahat.
+              price and catalog checks, nandito na lahat.
             </p>
           </div>
 
@@ -252,23 +252,23 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Authenticity Check */}
+            {/* Catalog Check */}
             <div className="card-elevated group hover:shadow-impeccable-xl transition-all duration-300">
               <div className="flex items-start gap-4 mb-6">
                 <div className="p-3 rounded-xl bg-brand-ink text-white shadow-impeccable-md">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="heading-3">Authenticity Check</h3>
-                  <p className="text-brand-muted mt-1">I-verify kung FDA-registered ang gamot bago mo bilhin.</p>
+                  <h3 className="heading-3">Catalog Check</h3>
+                  <p className="text-brand-muted mt-1">I-check kung naka-lista sa catalog namin ang gamot bago mo bilhin.</p>
                 </div>
               </div>
 
               <ul className="space-y-3 mb-6">
                 {[
                   'Scan the barcode or QR code on the pack',
-                  'Cross-check sa FDA Philippines registry',
-                  'Know right away if the product is authentic',
+                  'Cross-check against our FDA-registered catalog',
+                  'See if the code is listed before you buy',
                   'Report anything that looks suspicious',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-surface-600">
@@ -318,7 +318,7 @@ export default function Home() {
               {
                 step: '03',
                 title: 'Verify',
-                description: 'Scan the barcode to check if it’s FDA-registered and authentic.',
+                description: 'Scan the barcode to check if it’s listed in our FDA-registered catalog.',
                 icon: ScanLine,
               },
             ].map((item, i) => (
@@ -373,7 +373,7 @@ export default function Home() {
                 <LogoLockup tone="reversed" markSize={44} textClass="text-3xl" />
                 <p className="mt-8 text-white/75 leading-relaxed max-w-md text-lg">
                   Compare prices across Mercury Drug, Watsons, Rose Pharmacy and more.
-                  Check any medicine against the FDA Philippines registry, from Aparri to Jolo.
+                  Check barcodes and FDA numbers against our catalog of FDA-registered products, from Aparri to Jolo.
                 </p>
                 <p className="mt-4 text-white/60 text-sm max-w-md">
                   Isang sign of trust mula search hanggang checkout — para sa bawat
@@ -426,7 +426,7 @@ export default function Home() {
                 stars: 5,
               },
               {
-                quote: 'Buti na lang na-verify ko sa Authenticity Check — peke pala yung nabili ko. Ingat tayo!',
+                quote: 'Buti na lang na-check ko sa Catalog Check — hindi pala listado yung nabili ko. Ingat tayo!',
                 author: 'Juan D.',
                 role: 'Cebu',
                 stars: 5,
@@ -475,7 +475,7 @@ export default function Home() {
                 Start saving today
               </h2>
               <p className="text-lg text-white/85 max-w-2xl mx-auto mb-8">
-                Hanapin ang pinakamurang presyo for your medicine and verify authenticity in one place.
+                Hanapin ang pinakamurang presyo for your medicine and check codes in one place.
                 Free — no account needed.
               </p>
 
@@ -509,7 +509,7 @@ export default function Home() {
               <h4 className="font-semibold text-white mb-4">Features</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/medicines" className="hover:text-brand-mint transition-colors">Price Check</Link></li>
-                <li><Link href="/scanner" className="hover:text-brand-mint transition-colors">Authenticity Check</Link></li>
+                <li><Link href="/scanner" className="hover:text-brand-mint transition-colors">Catalog Check</Link></li>
                 <li><Link href="/nearby" className="hover:text-brand-mint transition-colors">Nearby Pharmacies</Link></li>
               </ul>
             </div>

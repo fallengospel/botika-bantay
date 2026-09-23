@@ -1,44 +1,80 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Linking,
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { ShieldCheck, X } from 'lucide-react';
+import { Camera, PermissionResponse } from 'expo-camera';
+import * as Haptics from 'expo-haptics';
+import { useFocusEffect } from '@react-navigation/native';
+import { ShieldCheck, X, Settings } from 'lucide-react-native';
 import { verifyMedicine } from '../services/supabase';
 import { NavigationProp } from '../types/navigation';
+import { colors, font, space, radius, MIN_TOUCH } from '../theme';
 
 interface Props {
   navigation: NavigationProp;
 }
 
 export default function ScannerScreen({ navigation }: Props) {
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, setPermission] = useState<PermissionResponse | null>(null);
   const [scanned, setScanned] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
-    if (!permission) {
-      requestPermission();
+    (async () => {
+      const res = await Camera.getCameraPermissionsAsync();
+      setPermission(res);
+      if (!res.granted && res.canAskAgain) {
+        const asked = await Camera.requestCameraPermissionsAsync();
+        setPermission(asked);
+      }
+    })();
+  }, []);
+
+  // Reset frozen camera when leaving the screen (Lola #12)
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setScanned(false);
+        setVerifying(false);
+      };
+    }, [])
+  );
+
+  const requestPermission = async () => {
+    const res = await Camera.requestCameraPermissionsAsync();
+    setPermission(res);
+  };
+
+  const openSettings = async () => {
+    try {
+      await Linking.openSettings();
+    } catch {
+      Alert.alert(
+        'Settings',
+        'Please open your phone Settings and enable camera access for BotikaBantay.'
+      );
     }
-  }, [permission]);
+  };
 
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
     if (scanned || verifying) return;
-    
+
     setScanned(true);
     setVerifying(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 
     try {
       const result = await verifyMedicine(data);
-      
-      if (result.status === 'found') {
+
+      if (result.status === 'found' && result.medicine) {
         Alert.alert(
-          'Product Verified ✓',
-          `${result.medicine.brand_name} is FDA-registered.\n\nGeneric: ${result.medicine.generic_name}\nManufacturer: ${result.medicine.manufacturer}`,
+          'Product Found in Catalog',
+          `${result.medicine.brand_name} (${result.medicine.generic_name}) is listed in our database.\n\nManufacturer: ${result.medicine.manufacturer || '—'}\nFDA Registration: ${result.medicine.fda_registration_number || 'N/A'}\n\nNote: This checks BotikaBantay's catalog of FDA-registered products, not a live FDA API.`,
           [
             {
               text: 'View Prices',
@@ -52,36 +88,29 @@ export default function ScannerScreen({ navigation }: Props) {
             },
           ]
         );
+      } else if (result.status === 'rate_limited') {
+        Alert.alert(
+          'Too Many Checks',
+          'Masyadong maraming check. Wait a few seconds and try again.',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
+        );
+      } else if (result.status === 'not_found') {
+        Alert.alert(
+          'Not in our catalog yet',
+          'Hindi namin mahanap ang code na ito sa database namin. Baka bago or hindi pa naka-lista. You can try another barcode, or check again later.',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
+        );
       } else {
         Alert.alert(
-          'Product Not Found',
-          'This product was not found in the FDA registry. Please verify manually or report it.',
-          [
-            {
-              text: 'Report Product',
-              onPress: () => {
-                // TODO: Navigate to report screen
-                Alert.alert('Report', 'Report feature coming soon');
-              },
-            },
-            {
-              text: 'Scan Again',
-              onPress: () => setScanned(false),
-            },
-          ]
+          'Could not check right now',
+          result.message || 'Parang may problema sa connection. Subukan muli mamaya.',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
         );
       }
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to verify product. Please try again.',
-        [
-          {
-            text: 'OK',
-            onPress: () => setScanned(false),
-          },
-        ]
-      );
+    } catch {
+      Alert.alert('Something went wrong', 'Failed to verify product. Please try again.', [
+        { text: 'OK', onPress: () => setScanned(false) },
+      ]);
     } finally {
       setVerifying(false);
     }
@@ -96,19 +125,41 @@ export default function ScannerScreen({ navigation }: Props) {
   }
 
   if (!permission.granted) {
+    const canAskAgain = permission.canAskAgain;
     return (
       <View style={styles.container}>
-        <ShieldCheck size={64} color="#16a34a" style={styles.icon} />
-        <Text style={styles.title}>Camera Permission Required</Text>
+        <ShieldCheck size={64} color={colors.brand} style={styles.icon} />
+        <Text style={styles.title}>Camera Access Needed</Text>
         <Text style={styles.text}>
-          BotikaBantay needs camera access to scan medicine barcodes and verify their authenticity.
+          BotikaBantay needs the camera to scan medicine barcodes. You can turn it on in
+          Settings.
         </Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={styles.buttonText}>Grant Permission</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={canAskAgain ? requestPermission : openSettings}
+          accessibilityRole="button"
+          accessibilityLabel={canAskAgain ? 'Allow camera permission' : 'Open settings'}
+        >
+          <Text style={styles.buttonText}>
+            {canAskAgain ? 'Allow Camera' : 'Open Settings'}
+          </Text>
         </TouchableOpacity>
+        {!canAskAgain && (
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={openSettings}
+            accessibilityRole="button"
+            accessibilityLabel="Open phone settings"
+          >
+            <Settings size={18} color={colors.brand} />
+            <Text style={styles.secondaryButtonText}>Open Phone Settings</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={styles.cancelButton}
           onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="Cancel and go back"
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
@@ -118,23 +169,18 @@ export default function ScannerScreen({ navigation }: Props) {
 
   return (
     <View style={styles.scannerContainer}>
-      <CameraView
+      <Camera
         style={styles.camera}
-        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ['qr', 'ean13', 'ean8', 'code128', 'code39'],
-        }}
+        onBarCodeScanned={scanned || verifying ? undefined : handleBarCodeScanned}
       />
-      
-      {/* Overlay */}
+
       <View style={styles.overlay}>
         <View style={styles.topOverlay}>
           <Text style={styles.instructionText}>
             Point camera at medicine barcode or QR code
           </Text>
         </View>
-        
-        {/* Scan Area */}
+
         <View style={styles.scanAreaContainer}>
           <View style={styles.scanArea}>
             <View style={[styles.corner, styles.topLeft]} />
@@ -143,7 +189,7 @@ export default function ScannerScreen({ navigation }: Props) {
             <View style={[styles.corner, styles.bottomRight]} />
           </View>
         </View>
-        
+
         <View style={styles.bottomOverlay}>
           {verifying ? (
             <Text style={styles.verifyingText}>Verifying product...</Text>
@@ -151,6 +197,8 @@ export default function ScannerScreen({ navigation }: Props) {
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => navigation.goBack()}
+              accessibilityRole="button"
+              accessibilityLabel="Close scanner"
             >
               <X size={24} color="#fff" />
             </TouchableOpacity>
@@ -164,46 +212,66 @@ export default function ScannerScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.paper,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: space.xxxl,
   },
   icon: {
-    marginBottom: 24,
+    marginBottom: space.xl,
   },
   title: {
-    fontSize: 20,
+    fontSize: font.xl,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
+    color: colors.ink,
+    marginBottom: space.md,
     textAlign: 'center',
   },
   text: {
-    fontSize: 16,
-    color: '#6b7280',
+    fontSize: font.md,
+    color: colors.muted,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: space.xl,
     lineHeight: 24,
   },
   button: {
-    backgroundColor: '#16a34a',
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    marginBottom: 12,
+    backgroundColor: colors.brand,
+    borderRadius: radius.sm,
+    paddingHorizontal: space.xxl,
+    paddingVertical: space.md,
+    marginBottom: space.md,
+    minWidth: 220,
+    minHeight: MIN_TOUCH + 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: font.md,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    marginBottom: space.sm,
+    minHeight: MIN_TOUCH,
+  },
+  secondaryButtonText: {
+    fontSize: font.md,
+    color: colors.brand,
+    fontWeight: '600',
   },
   cancelButton: {
-    padding: 12,
+    padding: space.md,
+    minHeight: MIN_TOUCH,
+    justifyContent: 'center',
   },
   cancelButtonText: {
-    fontSize: 16,
-    color: '#6b7280',
+    fontSize: font.md,
+    color: colors.muted,
   },
   scannerContainer: {
     flex: 1,
@@ -219,13 +287,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: space.xxxl,
   },
   instructionText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: font.md,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: space.xxxl,
   },
   scanAreaContainer: {
     height: 250,
@@ -241,7 +309,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 30,
     height: 30,
-    borderColor: '#16a34a',
+    borderColor: colors.brand,
   },
   topLeft: {
     top: 0,
@@ -275,12 +343,12 @@ const styles = StyleSheet.create({
   },
   verifyingText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: font.md,
   },
   closeButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',

@@ -7,12 +7,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
+  Alert,
   RefreshControl,
+  Platform,
 } from 'react-native';
-import { MapPin, Navigation, AlertTriangle } from 'lucide-react';
+import { MapPin, Navigation, AlertTriangle, Settings, Search } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import { supabase } from '../services/supabase';
 import { NavigationProp } from '../types/navigation';
+import { colors, font, space, radius, MIN_TOUCH } from '../theme';
 
 interface Props {
   navigation: NavigationProp;
@@ -31,33 +34,64 @@ interface PharmacyBranch {
     id: string;
     name: string;
     color: string;
-  };
+  } | null;
 }
 
-export default function NearbyScreen() {
+const RADIUS_KM = 10;
+
+export default function NearbyScreen({ navigation }: Props) {
   const [branches, setBranches] = useState<PharmacyBranch[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [errorKind, setErrorKind] = useState<'permission' | 'location' | 'network' | null>(
+    null
+  );
   const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
     getUserLocation();
   }, []);
 
-  const getUserLocation = async () => {
+  const openSettings = async () => {
+    try {
+      await Linking.openSettings();
+    } catch {
+      Alert.alert(
+        'Settings',
+        'Please open your phone Settings and enable location for BotikaBantay.'
+      );
+    }
+  };
+
+  const getUserLocation = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    setLocationError(null);
+    setErrorKind(null);
+
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setLocationError('Location permission is required to find nearby pharmacies.');
+        setLocationError(
+          'Location access is needed to find pharmacies near you. You can turn it on in Settings.'
+        );
+        setErrorKind('permission');
         setLoading(false);
+        setRefreshing(false);
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
-      fetchNearbyBranches(location.coords.latitude, location.coords.longitude);
-    } catch (error) {
-      setLocationError('Unable to get your location. Please enable location services.');
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      await fetchNearbyBranches(location.coords.latitude, location.coords.longitude);
+    } catch {
+      setLocationError(
+        'Could not get your location. Please make sure Location/GPS is turned on.'
+      );
+      setErrorKind('location');
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -75,13 +109,16 @@ export default function NearbyScreen() {
       });
 
       const nearbyBranches = branchesWithDistance
-        .filter((branch: any) => branch.distance <= 10)
+        .filter((branch: any) => branch.distance <= RADIUS_KM)
         .sort((a: any, b: any) => a.distance - b.distance);
 
       setBranches(nearbyBranches);
+      setErrorKind(null);
+      setLocationError(null);
     } catch (error) {
       console.error('Failed to fetch branches:', error);
-      setLocationError('Failed to load pharmacy data. Please try again.');
+      setLocationError('Could not load pharmacy data. Check your connection and try again.');
+      setErrorKind('network');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -89,32 +126,46 @@ export default function NearbyScreen() {
   };
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setLocationError(null);
-    getUserLocation();
+    getUserLocation(true);
   }, []);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
 
-  const getDirections = (lat: number, lng: number) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    Linking.openURL(url);
+  const getDirections = async (lat: number, lng: number) => {
+    const googleUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    const appleUrl = `maps://?daddr=${lat},${lng}`;
+    const url = Platform.OS === 'ios' ? appleUrl : googleUrl;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      await Linking.openURL(supported ? url : googleUrl);
+    } catch {
+      Alert.alert(
+        'Could not open maps',
+        'Hindi ma-open ang maps app. You can search the address manually instead.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const renderBranch = ({ item }: { item: PharmacyBranch }) => (
     <View style={styles.branchCard}>
       <View style={styles.branchHeader}>
-        <View style={[styles.chainDot, { backgroundColor: item.chain.color }]} />
-        <Text style={styles.chainName}>{item.chain.name}</Text>
+        <View
+          style={[styles.chainDot, { backgroundColor: item.chain?.color || colors.brand }]}
+        />
+        <Text style={styles.chainName}>{item.chain?.name || 'Pharmacy'}</Text>
         {item.distance !== undefined && (
           <Text style={styles.distance}>{item.distance.toFixed(1)} km</Text>
         )}
@@ -124,32 +175,90 @@ export default function NearbyScreen() {
       <TouchableOpacity
         style={styles.directionsButton}
         onPress={() => getDirections(item.latitude, item.longitude)}
+        accessibilityRole="button"
+        accessibilityLabel={`Get directions to ${item.name}`}
       >
-        <Navigation size={16} color="#16a34a" />
+        <Navigation size={18} color={colors.brandDeep} />
         <Text style={styles.directionsText}>Get Directions</Text>
       </TouchableOpacity>
     </View>
   );
 
+  const showSearchCta = (
+    <TouchableOpacity
+      style={styles.secondaryButton}
+      onPress={() => navigation.navigate('Medicines')}
+      accessibilityRole="button"
+      accessibilityLabel="Search medicines"
+    >
+      <Search size={18} color={colors.brand} />
+      <Text style={styles.secondaryButtonText}>Search Medicines</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
+      <Text style={styles.radiusHint}>Showing pharmacies within {RADIUS_KM} km</Text>
+
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#16a34a" />
-          <Text style={styles.loadingText}>Finding nearby pharmacies...</Text>
+        <View style={styles.centerBox} accessibilityRole="progressbar">
+          <ActivityIndicator size="large" color={colors.brand} />
+          <Text style={styles.centerText}>Finding nearby pharmacies...</Text>
         </View>
-      ) : locationError ? (
-        <View style={styles.errorContainer}>
-          <AlertTriangle size={48} color="#f59e0b" />
-          <Text style={styles.errorText}>{locationError}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={getUserLocation}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
+      ) : errorKind === 'permission' ? (
+        <View style={styles.centerBox}>
+          <AlertTriangle size={48} color={colors.warning} />
+          <Text style={styles.centerText}>{locationError}</Text>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={openSettings}
+            accessibilityRole="button"
+            accessibilityLabel="Open settings"
+          >
+            <Settings size={18} color={colors.white} />
+            <Text style={styles.primaryButtonText}>Open Settings</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => getUserLocation()}
+            accessibilityRole="button"
+            accessibilityLabel="Try again"
+          >
+            <Text style={styles.secondaryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+          {showSearchCta}
+        </View>
+      ) : errorKind ? (
+        <View style={styles.centerBox}>
+          <AlertTriangle size={48} color={colors.warning} />
+          <Text style={styles.centerText}>{locationError}</Text>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => getUserLocation()}
+            accessibilityRole="button"
+            accessibilityLabel="Try again"
+          >
+            <Text style={styles.primaryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+          {showSearchCta}
         </View>
       ) : branches.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <MapPin size={48} color="#d1d5db" />
-          <Text style={styles.emptyText}>No pharmacies found nearby</Text>
+        <View style={styles.centerBox}>
+          <MapPin size={48} color={colors.line} />
+          <Text style={styles.centerTitle}>No pharmacies found nearby</Text>
+          <Text style={styles.centerText}>
+            Wala kaming nakita within {RADIUS_KM} km mo. Subukang i-refresh, or maghanap
+            ng gamot muna.
+          </Text>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => getUserLocation(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Refresh location"
+          >
+            <Text style={styles.primaryButtonText}>Refresh Location</Text>
+          </TouchableOpacity>
+          {showSearchCta}
         </View>
       ) : (
         <FlatList
@@ -161,8 +270,8 @@ export default function NearbyScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#16a34a']}
-              tintColor="#16a34a"
+              colors={[colors.brand]}
+              tintColor={colors.brand}
             />
           }
         />
@@ -174,59 +283,79 @@ export default function NearbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.paper,
   },
-  loadingContainer: {
+  radiusHint: {
+    fontSize: font.sm,
+    color: colors.muted,
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
+    backgroundColor: colors.paper,
+  },
+  centerBox: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: space.xxxl,
   },
-  loadingText: {
-    marginTop: 12,
-    color: '#6b7280',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#6b7280',
+  centerTitle: {
+    fontSize: font.lg,
+    fontWeight: '600',
+    color: colors.ink,
+    marginTop: space.md,
     textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 24,
   },
-  retryButton: {
-    backgroundColor: '#16a34a',
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+  centerText: {
+    fontSize: font.md,
+    color: colors.muted,
+    textAlign: 'center',
+    marginTop: space.sm,
+    marginBottom: space.lg,
+    lineHeight: 24,
   },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.sm,
+    backgroundColor: colors.brand,
+    borderRadius: radius.sm,
+    paddingHorizontal: space.xxl,
+    paddingVertical: space.md,
+    minHeight: MIN_TOUCH,
+    marginTop: space.sm,
+    minWidth: 200,
+  },
+  primaryButtonText: {
+    color: colors.white,
+    fontSize: font.md,
     fontWeight: '600',
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  secondaryButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    minHeight: MIN_TOUCH,
+    marginTop: space.sm,
   },
-  emptyText: {
-    marginTop: 12,
-    color: '#6b7280',
-    fontSize: 16,
+  secondaryButtonText: {
+    color: colors.brand,
+    fontSize: font.md,
+    fontWeight: '600',
   },
   listContent: {
-    padding: 16,
+    padding: space.lg,
+    paddingTop: space.sm,
+    paddingBottom: space.xxxl,
   },
   branchCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    padding: space.lg,
+    marginBottom: space.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -236,44 +365,50 @@ const styles = StyleSheet.create({
   branchHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: space.sm,
   },
   chainDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: space.sm,
   },
   chainName: {
-    fontSize: 14,
+    fontSize: font.sm,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.ink,
     flex: 1,
   },
   distance: {
-    fontSize: 14,
-    color: '#16a34a',
-    fontWeight: '500',
+    fontSize: font.sm,
+    color: colors.brand,
+    fontWeight: '600',
   },
   branchName: {
-    fontSize: 16,
+    fontSize: font.md,
     fontWeight: '500',
-    color: '#111827',
-    marginBottom: 4,
+    color: colors.ink,
+    marginBottom: space.xs,
   },
   branchAddress: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 12,
+    fontSize: font.sm,
+    color: colors.muted,
+    marginBottom: space.md,
+    lineHeight: 20,
   },
   directionsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    gap: space.sm,
+    backgroundColor: colors.brandMint,
+    borderRadius: radius.sm,
+    paddingVertical: space.md,
+    minHeight: MIN_TOUCH,
   },
   directionsText: {
-    fontSize: 14,
-    color: '#16a34a',
-    fontWeight: '500',
+    fontSize: font.md,
+    color: colors.brandDeep,
+    fontWeight: '600',
   },
 });

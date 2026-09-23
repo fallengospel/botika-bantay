@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,18 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react-native';
 import { getMedicineById, getPricesForMedicine } from '../services/supabase';
-import { formatPrice } from '@botika-bantay/shared';
+import { formatPrice } from '../utils/format';
 import PriceCard from '../components/price/PriceCard';
 import { MedicineDetailRouteProp } from '../types/navigation';
+import { colors, font, space, radius, MIN_TOUCH } from '../theme';
 
 interface Props {
   route: MedicineDetailRouteProp;
+  navigation: any;
 }
 
 interface Medicine {
@@ -39,58 +42,149 @@ interface Price {
     chain: {
       name: string;
       color: string;
-    };
-  };
+    } | null;
+  } | null;
 }
 
-export default function MedicineDetailScreen({ route }: Props) {
+type LoadState = 'loading' | 'ready' | 'not_found' | 'error';
+
+export default function MedicineDetailScreen({ route, navigation }: Props) {
   const { id } = route.params;
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [prices, setPrices] = useState<Price[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>('loading');
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
+
+  const fetchMedicineDetails = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) setRefreshing(true);
+      else setLoadState('loading');
+
+      try {
+        const [medicineResult, pricesResult] = await Promise.allSettled([
+          getMedicineById(id),
+          getPricesForMedicine(id),
+        ]);
+
+        if (medicineResult.status === 'rejected') {
+          const msg =
+            medicineResult.reason instanceof Error &&
+            /network|fetch|timeout/i.test(medicineResult.reason.message)
+              ? 'No internet connection. Check your data and try again.'
+              : 'Could not load this medicine. Please try again.';
+          if (isRefresh) {
+            setRefreshMessage(msg);
+          } else {
+            setLoadState('error');
+          }
+          return;
+        }
+
+        const med = medicineResult.value;
+        if (!med) {
+          if (isRefresh) setRefreshMessage('This medicine may have been removed.');
+          else setLoadState('not_found');
+          return;
+        }
+
+        setMedicine(med);
+        if (pricesResult.status === 'fulfilled') {
+          setPrices(pricesResult.value || []);
+          setRefreshMessage(null);
+        } else if (isRefresh) {
+          setRefreshMessage('Prices could not be refreshed. Showing last known prices.');
+        } else {
+          setPrices([]);
+        }
+        setLoadState('ready');
+      } catch (err) {
+        console.error('Failed to fetch medicine details:', err);
+        if (isRefresh) setRefreshMessage('Could not refresh. Please try again.');
+        else setLoadState('error');
+      } finally {
+        setLoadingFalse();
+      }
+    },
+    [id]
+  );
+
+  const setLoadingFalse = () => {
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     fetchMedicineDetails();
-  }, [id]);
+  }, [fetchMedicineDetails]);
 
-  const fetchMedicineDetails = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-    try {
-      const medicineData = await getMedicineById(id);
-      setMedicine(medicineData);
-
-      const pricesData = await getPricesForMedicine(id);
-      setPrices(pricesData);
-    } catch (error) {
-      console.error('Failed to fetch medicine details:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  if (loading) {
+  if (loadState === 'loading') {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#16a34a" />
+      <View style={styles.centerBox} accessibilityRole="progressbar">
+        <ActivityIndicator size="large" color={colors.brand} />
+        <Text style={styles.centerText}>Loading medicine...</Text>
       </View>
     );
   }
 
-  if (!medicine) {
+  if (loadState === 'error') {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Medicine not found</Text>
+      <View style={styles.centerBox}>
+        <AlertTriangle size={48} color={colors.warning} />
+        <Text style={styles.centerTitle}>Could not load details</Text>
+        <Text style={styles.centerText}>
+          Parang may problema sa connection. Subukan muli.
+        </Text>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => fetchMedicineDetails()}
+          accessibilityRole="button"
+          accessibilityLabel="Try again"
+        >
+          <Text style={styles.primaryButtonText}>Try Again</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <ArrowLeft size={18} color={colors.brand} />
+          <Text style={styles.secondaryButtonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const sortedPrices = [...prices].sort((a, b) => a.price - b.price);
-  const lowestPrice = sortedPrices[0]?.price || 0;
-  const highestPrice = sortedPrices[sortedPrices.length - 1]?.price || 0;
+  if (loadState === 'not_found' || !medicine) {
+    return (
+      <View style={styles.centerBox}>
+        <AlertTriangle size={48} color={colors.warning} />
+        <Text style={styles.centerTitle}>Medicine not found</Text>
+        <Text style={styles.centerText}>
+          Baka wala pa sa catalog namin ito. Bumalik sa search at ibang gamot naman ang i-try.
+        </Text>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back to search"
+        >
+          <Text style={styles.primaryButtonText}>Back to Search</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const sortedPrices = [...prices]
+    .filter((p) => p && Number.isFinite(Number(p.price)))
+    .sort((a, b) => Number(a.price) - Number(b.price));
+  const lowestPrice = sortedPrices.length > 0 ? Number(sortedPrices[0].price) : 0;
+  const highestPrice =
+    sortedPrices.length > 0 ? Number(sortedPrices[sortedPrices.length - 1].price) : 0;
   const savings = highestPrice - lowestPrice;
+  const pharmacyCount = new Set(
+    prices.map((p) => p.branch?.id).filter(Boolean)
+  ).size;
 
   return (
     <ScrollView
@@ -99,49 +193,54 @@ export default function MedicineDetailScreen({ route }: Props) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={() => fetchMedicineDetails(true)}
-          colors={['#16a34a']}
-          tintColor="#16a34a"
+          colors={[colors.brand]}
+          tintColor={colors.brand}
         />
       }
     >
-      {/* Medicine Info */}
+      {refreshMessage && (
+        <View style={styles.refreshBanner}>
+          <RefreshCw size={16} color={colors.warning} />
+          <Text style={styles.refreshBannerText}>{refreshMessage}</Text>
+        </View>
+      )}
+
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Medicine Information</Text>
         <View style={styles.infoGrid}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Brand Name</Text>
-            <Text style={styles.infoValue}>{medicine.brand_name}</Text>
+            <Text style={styles.infoValue}>{medicine.brand_name || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Generic Name</Text>
-            <Text style={styles.infoValue}>{medicine.generic_name}</Text>
+            <Text style={styles.infoValue}>{medicine.generic_name || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Dosage Form</Text>
-            <Text style={styles.infoValue}>{medicine.dosage_form}</Text>
+            <Text style={styles.infoValue}>{medicine.dosage_form || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Strength</Text>
-            <Text style={styles.infoValue}>{medicine.strength}</Text>
+            <Text style={styles.infoValue}>{medicine.strength || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Manufacturer</Text>
-            <Text style={styles.infoValue}>{medicine.manufacturer}</Text>
+            <Text style={styles.infoValue}>{medicine.manufacturer || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>FDA Registration</Text>
-            <Text style={styles.infoValue}>{medicine.fda_registration_number}</Text>
+            <Text style={styles.infoValue}>{medicine.fda_registration_number || '—'}</Text>
           </View>
         </View>
       </View>
 
-      {/* Savings Banner */}
       {savings > 0 && (
         <View style={styles.savingsBanner}>
-          <CheckCircle size={24} color="#16a34a" />
+          <CheckCircle size={24} color={colors.brand} />
           <View style={styles.savingsContent}>
             <Text style={styles.savingsTitle}>
-              You can save up to {formatPrice(savings)}
+              You can save up to {formatPrice(Number(savings) || 0)}
             </Text>
             <Text style={styles.savingsSubtitle}>
               by choosing the lowest price option
@@ -150,25 +249,35 @@ export default function MedicineDetailScreen({ route }: Props) {
         </View>
       )}
 
-      {/* Price List */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Prices ({prices.length} pharmacies)</Text>
-        
+        <Text style={styles.cardTitle}>
+          Prices ({pharmacyCount} pharmac{pharmacyCount === 1 ? 'y' : 'ies'})
+        </Text>
+
         {prices.length === 0 ? (
           <View style={styles.emptyPrices}>
             <Text style={styles.emptyText}>No prices available yet</Text>
-            <Text style={styles.emptySubtext}>Be the first to submit a price!</Text>
+            <Text style={styles.emptySubtext}>
+              Wala pang price na naka-lista dito. Subukan mong i-refresh, or bumalik sa
+              Price Check para makita ang ibang gamot.
+            </Text>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => fetchMedicineDetails(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Refresh prices"
+            >
+              <Text style={styles.primaryButtonText}>Refresh Prices</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           sortedPrices.map((price, index) => (
-            <PriceCard 
-              key={price.id} 
-              price={price} 
-              isLowest={index === 0}
-            />
+            <PriceCard key={price.id} price={price} isLowest={index === 0} />
           ))
         )}
       </View>
+
+      <View style={{ height: space.xxxl }} />
     </ScrollView>
   );
 }
@@ -176,27 +285,80 @@ export default function MedicineDetailScreen({ route }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.paper,
   },
-  loadingContainer: {
+  centerBox: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: space.xxxl,
+    backgroundColor: colors.paper,
   },
-  errorContainer: {
-    flex: 1,
+  centerTitle: {
+    fontSize: font.xl,
+    fontWeight: '700',
+    color: colors.ink,
+    marginTop: space.md,
+    textAlign: 'center',
+  },
+  centerText: {
+    fontSize: font.md,
+    color: colors.muted,
+    textAlign: 'center',
+    marginTop: space.sm,
+    marginBottom: space.lg,
+    lineHeight: 24,
+  },
+  primaryButton: {
+    backgroundColor: colors.brand,
+    borderRadius: radius.sm,
+    paddingHorizontal: space.xxl,
+    paddingVertical: space.md,
+    minHeight: MIN_TOUCH,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: space.sm,
   },
-  errorText: {
-    fontSize: 16,
-    color: '#6b7280',
+  primaryButtonText: {
+    color: colors.white,
+    fontSize: font.md,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    minHeight: MIN_TOUCH,
+    marginTop: space.sm,
+  },
+  secondaryButtonText: {
+    color: colors.brand,
+    fontSize: font.md,
+    fontWeight: '600',
+  },
+  refreshBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    backgroundColor: colors.warningBg,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    marginHorizontal: space.lg,
+    marginTop: space.lg,
+    borderRadius: radius.sm,
+  },
+  refreshBannerText: {
+    flex: 1,
+    color: colors.warning,
+    fontSize: font.sm,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: space.lg,
+    margin: space.lg,
     marginBottom: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -205,10 +367,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: font.lg,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
+    color: colors.ink,
+    marginBottom: space.lg,
   },
   infoGrid: {
     flexDirection: 'row',
@@ -216,51 +378,56 @@ const styles = StyleSheet.create({
   },
   infoItem: {
     width: '50%',
-    marginBottom: 16,
+    marginBottom: space.lg,
+    paddingRight: space.sm,
   },
   infoLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 4,
+    fontSize: font.xs,
+    color: colors.muted,
+    marginBottom: space.xs,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: font.sm + 1,
     fontWeight: '500',
-    color: '#111827',
+    color: colors.ink,
   },
   savingsBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#dcfce7',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
+    backgroundColor: colors.brandMint,
+    borderRadius: radius.md,
+    padding: space.lg,
+    margin: space.lg,
     marginBottom: 0,
   },
   savingsContent: {
-    marginLeft: 12,
+    marginLeft: space.md,
     flex: 1,
   },
   savingsTitle: {
-    fontSize: 16,
+    fontSize: font.md,
     fontWeight: '600',
-    color: '#166534',
+    color: colors.brandDeep,
   },
   savingsSubtitle: {
-    fontSize: 14,
-    color: '#15803d',
+    fontSize: font.sm,
+    color: colors.brand,
   },
   emptyPrices: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: space.xxl,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginBottom: 4,
+    fontSize: font.md,
+    color: colors.ink,
+    fontWeight: '600',
+    marginBottom: space.sm,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#9ca3af',
+    fontSize: font.sm,
+    color: colors.muted,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: space.md,
   },
 });

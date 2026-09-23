@@ -13,144 +13,262 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Warning: EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY must be set in your .env file');
+  console.warn(
+    'Warning: EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY must be set in your .env file'
+  );
 }
 
-export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder', {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder',
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+    global: { fetch: timeoutFetch },
+  }
+);
+
+/** Fetch wrapper with a hard timeout so spinners never hang forever. */
+async function timeoutFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const ms = 12000;
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const nextInit: RequestInit = { ...(init || {}), signal: controller.signal };
+    return await fetch(input, nextInit);
+  } catch (e: any) {
+    if (e?.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your connection and try again.');
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Escape characters that break PostgREST `.or()` filters. */
+function sanitizeSearch(search: string): string {
+  return search
+    .trim()
+    .replace(/[,()%*]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 64);
+}
 
 export async function getMedicines(search?: string) {
-  const cached = await getMedicinesCached(search);
+  const q = search ? sanitizeSearch(search) : undefined;
+  const cached = await getMedicinesCached(q);
   if (cached) return cached;
 
-  let query = supabase
-    .from('medicines')
-    .select('*')
-    .order('brand_name');
+  let query = supabase.from('medicines').select('*').order('brand_name');
 
-  if (search) {
-    query = query.or(`brand_name.ilike.%${search}%,generic_name.ilike.%${search}%`);
+  if (q) {
+    query = query.or(`brand_name.ilike.%${q}%,generic_name.ilike.%${q}%`);
   }
 
-  const { data, error } = await query;
-  if (error) throw error;
-
-  if (data) {
-    await setMedicinesCached(data, search);
+  try {
+    const { data, error } = await query;
+    if (error) throw error;
+    if (data) await setMedicinesCached(data, q);
+    return data || [];
+  } catch (err) {
+    // Fall back to stale cache when offline (Lola #23)
+    const stale = await getMedicinesCached(q, { allowExpired: true });
+    if (stale) return stale;
+    throw err;
   }
-
-  return data;
 }
 
 export async function getMedicineById(id: string) {
   const cached = await getMedicineDetailCached(id);
   if (cached) return cached;
 
-  const { data, error } = await supabase
-    .from('medicines')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('medicines')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
 
-  if (error) throw error;
+    if (error) throw error;
 
-  if (data) {
-    await setMedicineDetailCached(id, data);
+    if (data) {
+      await setMedicineDetailCached(id, data);
+    }
+    return data;
+  } catch (err) {
+    const stale = await getMedicineDetailCached(id, { allowExpired: true });
+    if (stale) return stale;
+    throw err;
   }
-
-  return data;
 }
 
 export async function getPricesForMedicine(medicineId: string) {
   const cached = await getPricesCached(medicineId);
   if (cached) return cached;
 
-  const { data, error } = await supabase
-    .from('prices')
-    .select(`
-      *,
-      branch:pharmacy_branches(*, chain:pharmacy_chains(*))
-    `)
-    .eq('medicine_id', medicineId)
-    .order('price');
+  try {
+    const { data, error } = await supabase
+      .from('prices')
+      .select(
+        `
+        *,
+        branch:pharmacy_branches(*, chain:pharmacy_chains(*))
+      `
+      )
+      .eq('medicine_id', medicineId)
+      .order('price');
 
-  if (error) throw error;
+    if (error) throw error;
 
-  if (data) {
-    await setPricesCached(medicineId, data);
+    const rows = data || [];
+    await setPricesCached(medicineId, rows);
+    return rows;
+  } catch (err) {
+    const stale = await getPricesCached(medicineId, { allowExpired: true });
+    if (stale) return stale;
+    throw err;
   }
-
-  return data;
 }
 
-export async function verifyMedicine(scannedCode: string) {
+export type VerifyResult =
+  | { status: 'found'; message: string; medicine: any }
+  | { status: 'not_found'; message: string; medicine: null }
+  | { status: 'rate_limited'; message: string; medicine: null }
+  | { status: 'error'; message: string; medicine: null };
+
+/** In-memory rate limit mirroring web /api/verification (30/min). */
+const verifyWindowMs = 60_000;
+const verifyMax = 30;
+const verifyHits: number[] = [];
+
+function checkVerifyRateLimit(): boolean {
+  const now = Date.now();
+  while (verifyHits.length > 0 && now - verifyHits[0] > verifyWindowMs) {
+    verifyHits.shift();
+  }
+  if (verifyHits.length >= verifyMax) return false;
+  verifyHits.push(now);
+  return true;
+}
+
+/** Escape characters that break PostgREST `.or()` filters. */
+function sanitizeCode(code: string): string {
+  return code
+    .trim()
+    .replace(/[,()%*]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 64);
+}
+
+export async function verifyMedicine(scannedCode: string): Promise<VerifyResult> {
+  const code = sanitizeCode(scannedCode || '');
+  if (!code) {
+    return {
+      status: 'error',
+      message: 'Please scan a valid barcode.',
+      medicine: null,
+    };
+  }
+
+  if (!checkVerifyRateLimit()) {
+    return {
+      status: 'rate_limited',
+      message: 'Too many checks. Wait a moment and try again.',
+      medicine: null,
+    };
+  }
+
   try {
-    // Try to find medicine by barcode first
     const barcodeResult = await supabase
       .from('medicines')
       .select('*')
-      .eq('barcode', scannedCode)
-      .single();
+      .eq('barcode', code)
+      .maybeSingle();
 
-    if (barcodeResult.error && barcodeResult.error.code !== 'PGRST116') {
-      throw barcodeResult.error;
-    }
+    if (barcodeResult.error) throw barcodeResult.error;
 
     if (barcodeResult.data) {
-      await logVerification(supabase, scannedCode, barcodeResult.data.id, 'found');
+      await logVerification(supabase, code, barcodeResult.data.id, 'found');
       return {
         status: 'found',
-        message: 'Product verified as FDA-registered',
+        message: `Product found in our catalog: ${barcodeResult.data.brand_name} (${barcodeResult.data.generic_name}). FDA Registration ${barcodeResult.data.fda_registration_number || 'N/A'} — this checks our database, not a live FDA API.`,
         medicine: barcodeResult.data,
       };
     }
 
-    // If not found by barcode, try by FDA registration number
     const fdaResult = await supabase
       .from('medicines')
       .select('*')
-      .eq('fda_registration_number', scannedCode)
-      .single();
+      .eq('fda_registration_number', code)
+      .maybeSingle();
 
-    if (fdaResult.error && fdaResult.error.code !== 'PGRST116') {
-      throw fdaResult.error;
-    }
+    if (fdaResult.error) throw fdaResult.error;
 
     if (fdaResult.data) {
-      await logVerification(supabase, scannedCode, fdaResult.data.id, 'found');
+      await logVerification(supabase, code, fdaResult.data.id, 'found');
       return {
         status: 'found',
-        message: 'Product verified as FDA-registered',
+        message: `Product found in our catalog: ${fdaResult.data.brand_name} (${fdaResult.data.generic_name}). FDA Registration ${fdaResult.data.fda_registration_number || 'N/A'} — this checks our database, not a live FDA API.`,
         medicine: fdaResult.data,
       };
     }
 
-    // Log not found
-    await logVerification(supabase, scannedCode, null, 'not_found');
+    // Fuzzy fallback (parity with web API) — sanitized for PostgREST
+    const { data: fuzzy } = await supabase
+      .from('medicines')
+      .select('*')
+      .or(
+        `brand_name.ilike.%${code}%,generic_name.ilike.%${code}%,barcode.ilike.%${code}%,fda_registration_number.ilike.%${code}%`
+      )
+      .limit(2);
+
+    if (fuzzy && fuzzy.length === 1) {
+      await logVerification(supabase, code, fuzzy[0].id, 'found');
+      return {
+        status: 'found',
+        message: `Product found in our catalog: ${fuzzy[0].brand_name} (${fuzzy[0].generic_name}). FDA Registration ${fuzzy[0].fda_registration_number || 'N/A'} — this checks our database, not a live FDA API.`,
+        medicine: fuzzy[0],
+      };
+    }
+
+    if (fuzzy && fuzzy.length > 1) {
+      await logVerification(supabase, code, null, 'ambiguous');
+      return {
+        status: 'not_found',
+        message: `Found ${fuzzy.length} possible matches. Please be more specific or scan again.`,
+        medicine: null,
+      };
+    }
+
+    await logVerification(supabase, code, null, 'not_found');
     return {
       status: 'not_found',
-      message: 'Product not found in FDA registry. Please verify manually or report.',
+      message: 'Product not found in our catalog.',
       medicine: null,
     };
   } catch (error) {
     console.error('Verification failed:', error);
     return {
       status: 'error',
-      message: 'Verification service unavailable. Please try again.',
+      message: 'Could not check right now. Please check your connection and try again.',
       medicine: null,
     };
   }
 }
 
-async function logVerification(supabase: any, code: string, medicineId: string | null, result: string) {
+async function logVerification(
+  client: typeof supabase,
+  code: string,
+  medicineId: string | null,
+  result: string
+) {
   try {
-    await supabase.from('verification_records').insert({
+    await client.from('verification_records').insert({
       scanned_code: code,
       medicine_id: medicineId,
       match_result: result,

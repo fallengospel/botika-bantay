@@ -66,7 +66,7 @@
 | 34 | Expo SDK 50 is outdated (current is 52+) | `apps/mobile/package.json` | Low |
 | 35 | Service worker caches API responses - stale price data possible | `apps/web/public/sw.js` | Low |
 | 36 | Root `lint` script references ESLint without config | `package.json` | Low |
-| 37 | No monorepo `workspaces` field in root `package.json` | `package.json` | Low |
+| 37 | ~~No monorepo `workspaces` field in root `package.json`~~ FIXED | `package.json` | Low |
 
 ---
 

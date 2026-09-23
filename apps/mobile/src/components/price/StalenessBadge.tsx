@@ -1,39 +1,49 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { calculateStaleness } from '@botika-bantay/shared';
+import { colors, font, radius, space } from '../../theme';
 
 interface StalenessBadgeProps {
   lastUpdated: string;
 }
 
+function calculateStaleness(date: Date): 'fresh' | 'stale' | 'very_stale' {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return 'very_stale';
+  const days = (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24);
+  if (days <= 7) return 'fresh';
+  if (days <= 30) return 'stale';
+  return 'very_stale';
+}
+
 export default function StalenessBadge({ lastUpdated }: StalenessBadgeProps) {
   const staleness = calculateStaleness(new Date(lastUpdated));
-  
+
   const badges = {
-    fresh: { text: 'Fresh', color: '#dcfce7', textColor: '#166534' },
-    stale: { text: 'Stale', color: '#fef9c3', textColor: '#854d0e' },
-    very_stale: { text: 'Outdated', color: '#fee2e2', textColor: '#991b1b' },
+    fresh: { text: 'Fresh', color: colors.brandMint, textColor: colors.brandDeep },
+    stale: { text: 'Stale', color: colors.warningBg, textColor: colors.warning },
+    very_stale: { text: 'Outdated', color: colors.dangerBg, textColor: colors.danger },
   };
 
   const badge = badges[staleness];
 
   return (
-    <View style={[styles.badge, { backgroundColor: badge.color }]}>
-      <Text style={[styles.badgeText, { color: badge.textColor }]}>
-        {badge.text}
-      </Text>
+    <View
+      style={[styles.badge, { backgroundColor: badge.color }]}
+      accessibilityLabel={`Price is ${badge.text}`}
+    >
+      <Text style={[styles.badgeText, { color: badge.textColor }]}>{badge.text}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   badge: {
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.sm,
+    paddingVertical: 3,
   },
   badgeText: {
-    fontSize: 10,
+    fontSize: font.xs,
     fontWeight: '600',
   },
 });

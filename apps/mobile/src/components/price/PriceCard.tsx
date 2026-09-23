@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MapPin, Clock } from 'lucide-react';
-import { formatPrice } from '@botika-bantay/shared';
+import { MapPin, Clock } from 'lucide-react-native';
+import { formatPrice, formatDate } from '../../utils/format';
 import StalenessBadge from './StalenessBadge';
+import { colors, font, space, radius } from '../../theme';
 
 interface PriceCardProps {
   price: {
@@ -17,41 +18,48 @@ interface PriceCardProps {
       chain: {
         name: string;
         color: string;
-      };
-    };
+      } | null;
+    } | null;
   };
   isLowest?: boolean;
 }
 
 export default function PriceCard({ price, isLowest }: PriceCardProps) {
+  const chain = price.branch?.chain;
+
   return (
-    <View style={[styles.card, isLowest && styles.lowestCard]}>
+    <View
+      style={[styles.card, isLowest && styles.lowestCard]}
+      accessible
+      accessibilityLabel={`${chain?.name || 'Pharmacy'} price ${formatPrice(Number(price.price) || 0)} at ${price.branch?.name || 'branch'}`}
+    >
       <View style={styles.header}>
         <View style={styles.chain}>
-          <View style={[styles.dot, { backgroundColor: price.branch.chain.color }]} />
-          <Text style={styles.chainName}>{price.branch.chain.name}</Text>
+          <View
+            style={[styles.dot, { backgroundColor: chain?.color || colors.brand }]}
+          />
+          <Text style={styles.chainName}>{chain?.name || 'Pharmacy'}</Text>
           {isLowest && (
             <View style={styles.lowestBadge}>
               <Text style={styles.lowestBadgeText}>Lowest</Text>
             </View>
           )}
         </View>
-        <Text style={styles.amount}>{formatPrice(price.price)}</Text>
+        <Text style={styles.amount}>{formatPrice(Number(price.price) || 0)}</Text>
       </View>
-      
+
       <View style={styles.location}>
-        <MapPin size={14} color="#6b7280" />
+        <MapPin size={16} color={colors.muted} />
         <Text style={styles.locationText}>
-          {price.branch.name} - {price.branch.address}
+          {price.branch?.name || 'Pharmacy branch'}
+          {price.branch?.address ? ` - ${price.branch.address}` : ''}
         </Text>
       </View>
-      
+
       <View style={styles.footer}>
         <View style={styles.time}>
-          <Clock size={14} color="#9ca3af" />
-          <Text style={styles.timeText}>
-            Updated: {new Date(price.last_updated).toLocaleDateString()}
-          </Text>
+          <Clock size={16} color={colors.muted} />
+          <Text style={styles.timeText}>Updated: {formatDate(price.last_updated)}</Text>
         </View>
         <StalenessBadge lastUpdated={price.last_updated} />
       </View>
@@ -61,63 +69,67 @@ export default function PriceCard({ price, isLowest }: PriceCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    backgroundColor: colors.paper,
+    borderRadius: radius.sm,
+    padding: space.md,
+    marginBottom: space.sm,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   lowestCard: {
-    backgroundColor: '#dcfce7',
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
+    backgroundColor: colors.brandMint,
+    borderColor: colors.brand,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: space.sm,
   },
   chain: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   dot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: space.sm,
   },
   chainName: {
-    fontSize: 14,
+    fontSize: font.sm,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.ink,
   },
   lowestBadge: {
-    backgroundColor: '#16a34a',
-    borderRadius: 12,
-    paddingHorizontal: 8,
+    backgroundColor: colors.brand,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.sm,
     paddingVertical: 2,
-    marginLeft: 8,
+    marginLeft: space.sm,
   },
   lowestBadgeText: {
-    fontSize: 10,
+    fontSize: font.xs,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   amount: {
-    fontSize: 18,
+    fontSize: font.xl,
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.ink,
   },
   location: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: space.sm,
+    gap: space.xs,
   },
   locationText: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginLeft: 4,
+    fontSize: font.sm,
+    color: colors.muted,
+    flex: 1,
+    lineHeight: 18,
   },
   footer: {
     flexDirection: 'row',
@@ -127,10 +139,10 @@ const styles = StyleSheet.create({
   time: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: space.xs,
   },
   timeText: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginLeft: 4,
+    fontSize: font.xs + 1,
+    color: colors.muted,
   },
 });

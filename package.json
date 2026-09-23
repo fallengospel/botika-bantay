@@ -3,11 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "BotikaBantay - Medicine Price Comparison & Authenticity Verification Platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev:web": "cd apps/web && npm run dev",
-    "dev:mobile": "cd apps/mobile && npm start",
-    "build:web": "cd apps/web && npm run build",
-    "lint": "echo 'Linting not configured yet. Run eslint manually per app.'",
+    "dev:web": "npm run dev --workspace @botika-bantay/web",
+    "dev:mobile": "npm run start --workspace @botika-bantay/mobile",
+    "build:web": "npm run build --workspace @botika-bantay/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run typecheck --workspaces --if-present",
     "db:migrate": "npx supabase db push",
     "db:seed": "npx tsx scripts/seed.ts",
     "db:reset": "npx supabase db reset"
