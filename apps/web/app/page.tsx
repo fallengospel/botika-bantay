@@ -426,7 +426,7 @@ export default function Home() {
                 stars: 5,
               },
               {
-                quote: 'Buti na lang na-verify ko sa Authenticity Check — peke pala yung nabili ko. Ingat tayo!',
+                quote: 'Buti na lang na-check ko sa Catalog Check — hindi pala listado yung nabili ko. Ingat tayo!',
                 author: 'Juan D.',
                 role: 'Cebu',
                 stars: 5,
@@ -509,7 +509,7 @@ export default function Home() {
               <h4 className="font-semibold text-white mb-4">Features</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/medicines" className="hover:text-brand-mint transition-colors">Price Check</Link></li>
-                <li><Link href="/scanner" className="hover:text-brand-mint transition-colors">Authenticity Check</Link></li>
+                <li><Link href="/scanner" className="hover:text-brand-mint transition-colors">Catalog Check</Link></li>
                 <li><Link href="/nearby" className="hover:text-brand-mint transition-colors">Nearby Pharmacies</Link></li>
               </ul>
             </div>
