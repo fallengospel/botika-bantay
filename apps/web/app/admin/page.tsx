@@ -35,60 +35,128 @@ export default function AdminPage() {
   const [reports, setReports] = useState<SuspiciousReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [authChecked, setAuthChecked] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, [activeTab, filter]);
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const supabase = createSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setUnauthorized(true);
+        setLoading(false);
+        setAuthChecked(true);
+        return;
+      }
+      setAuthChecked(true);
+      loadData();
+    } catch {
+      setUnauthorized(true);
+      setLoading(false);
+      setAuthChecked(true);
+    }
+  };
+
+  useEffect(() => {
+    if (authChecked && !unauthorized) {
+      loadData();
+    }
+  }, [activeTab, filter, authChecked, unauthorized]);
 
   const loadData = async () => {
     setLoading(true);
     try {
+      const supabase = createSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
       if (activeTab === 'submissions' || activeTab === 'outliers') {
-        const res = await fetch(`/api/admin/submissions?status=${filter}${activeTab === 'outliers' ? '&outliers=true' : ''}`);
+        const res = await fetch(`/api/admin/submissions?status=${filter}${activeTab === 'outliers' ? '&outliers=true' : ''}`, { headers });
         if (res.ok) {
           const data = await res.json();
           setSubmissions(data);
+        } else if (res.status === 401) {
+          setUnauthorized(true);
         }
       } else {
-        const res = await fetch(`/api/admin/reports?status=${filter}`);
+        const res = await fetch(`/api/admin/reports?status=${filter}`, { headers });
         if (res.ok) {
           const data = await res.json();
           setReports(data);
+        } else if (res.status === 401) {
+          setUnauthorized(true);
         }
       }
-    } catch {}
+    } catch {
+    }
     setLoading(false);
   };
 
   const moderateSubmission = async (id: string, status: 'approved' | 'rejected') => {
     try {
+      const supabase = createSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
       await fetch('/api/admin/submissions', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ id, status }),
       });
       setSubmissions(prev => prev.filter(s => s.id !== id));
-    } catch {}
+    } catch {
+    }
   };
 
   const moderateReport = async (id: string, status: 'reviewed' | 'forwarded_to_fda') => {
     try {
+      const supabase = createSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
       await fetch('/api/admin/reports', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ id, status }),
       });
       setReports(prev => prev.filter(r => r.id !== id));
-    } catch {}
+    } catch {
+    }
   };
 
   const tabs = [
-    { id: 'submissions' as Tab, label: 'Price Submissions', icon: Clock },
-    { id: 'reports' as Tab, label: 'Suspicious Reports', icon: Flag },
-    { id: 'outliers' as Tab, label: 'Outlier Prices', icon: AlertTriangle },
+    { id: 'submissions' as Tab, label: 'Mga Presyo', icon: Clock },
+    { id: 'reports' as Tab, label: 'Mga Reklamo', icon: Flag },
+    { id: 'outliers' as Tab, label: 'Kakaibang Presyo', icon: AlertTriangle },
   ];
 
   const filters = ['all', 'pending', 'approved', 'rejected'] as const;
+
+  if (unauthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-50">
+        <div className="card-elevated max-w-md w-full mx-4 p-8 text-center">
+          <ShieldCheck className="w-12 h-12 text-surface-300 mx-auto mb-4" />
+          <h1 className="heading-3 mb-2">Kailangan ng Login</h1>
+          <p className="text-surface-600 mb-6">Kailangan mong mag-login bilang admin para ma-access ang page na ito.</p>
+          <Link href="/login" className="btn-primary inline-flex">
+            Mag-login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface-50">
@@ -100,7 +168,7 @@ export default function AdminPage() {
           </Link>
           <h1 className="text-sm font-semibold text-surface-900 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-primary-600" />
-            Admin Dashboard
+            Admin Panel
           </h1>
           <div className="w-16" />
         </div>
@@ -154,7 +222,7 @@ export default function AdminPage() {
             {(activeTab === 'submissions' || activeTab === 'outliers') && submissions.length === 0 && (
               <div className="text-center py-20 text-surface-500">
                 <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-surface-300" />
-                <p>No submissions to review.</p>
+                <p>Walang submission na kailangan i-review.</p>
               </div>
             )}
 
@@ -186,14 +254,14 @@ export default function AdminPage() {
                     className="btn-sm px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 text-sm font-medium transition-colors"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => moderateSubmission(sub.id, 'rejected')}
-                    className="btn-sm px-3 py-1.5 rounded-lg bg-danger-light text-danger-dark hover:bg-red-100 text-sm font-medium transition-colors"
-                  >
-                    <XCircle className="w-3.5 h-3.5 inline mr-1" />
-                    Reject
+                     Aprubahan
+                   </button>
+                   <button
+                     onClick={() => moderateSubmission(sub.id, 'rejected')}
+                     className="btn-sm px-3 py-1.5 rounded-lg bg-danger-light text-danger-dark hover:bg-red-100 text-sm font-medium transition-colors"
+                   >
+                     <XCircle className="w-3.5 h-3.5 inline mr-1" />
+                     I-reject
                   </button>
                 </div>
               </div>
@@ -203,7 +271,7 @@ export default function AdminPage() {
             {activeTab === 'reports' && reports.length === 0 && (
               <div className="text-center py-20 text-surface-500">
                 <Flag className="w-12 h-12 mx-auto mb-3 text-surface-300" />
-                <p>No suspicious reports to review.</p>
+                <p>Walang reklamo na kailangan i-review.</p>
               </div>
             )}
 
@@ -236,13 +304,13 @@ export default function AdminPage() {
                       className="px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 text-sm font-medium transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5 inline mr-1" />
-                      Review
-                    </button>
-                    <button
-                      onClick={() => moderateReport(report.id, 'forwarded_to_fda')}
-                      className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-colors"
-                    >
-                      Forward to FDA
+                       I-review
+                     </button>
+                     <button
+                       onClick={() => moderateReport(report.id, 'forwarded_to_fda')}
+                       className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-colors"
+                     >
+                       I-forward sa FDA
                     </button>
                   </div>
                 </div>

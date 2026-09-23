@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { checkRateLimit } from '@/lib/api-utils';
 
 const OUTLIER_THRESHOLD = 0.40;
 
 export async function GET(request: Request) {
+  // Rate limit: 30 requests per minute per IP
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const rateLimit = checkRateLimit(`outlier:${ip}`, 30, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const medicineId = searchParams.get('medicineId');
   const priceStr = searchParams.get('price');

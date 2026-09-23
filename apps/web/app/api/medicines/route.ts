@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { getPaginationParams, paginateResponse } from '@/lib/api-utils';
+import { getPaginationParams, paginateResponse, checkRateLimit } from '@/lib/api-utils';
 
 export async function GET(request: Request) {
+  // Rate limit: 60 requests per minute per IP
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const rateLimit = checkRateLimit(`medicines:${ip}`, 60, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const search = searchParams.get('search');
   const condition = searchParams.get('condition');

@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, verifyUserSession } from '@/lib/supabase';
 
 export async function GET(request: Request) {
+  // Auth check
+  const userId = await verifyUserSession(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || 'all';
 
@@ -44,6 +50,12 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  // Auth check
+  const userId = await verifyUserSession(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   if (!supabase) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
   }
