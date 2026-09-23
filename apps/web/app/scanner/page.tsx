@@ -58,7 +58,7 @@ export default function ScannerPage() {
             <div className="p-2 rounded-xl bg-brand-ink text-white shadow-impeccable-md">
               <LogoMark size={28} tone="reversed" title="" />
             </div>
-            <h1 className="heading-2">Tunay Check</h1>
+            <h1 className="heading-2">Verify</h1>
           </div>
           <p className="text-brand-muted">Verify if medicine is FDA-registered and authentic</p>
         </div>
@@ -67,18 +67,18 @@ export default function ScannerPage() {
       <div className="page-container max-w-3xl py-8">
         {/* How to Verify - Instructions first */}
         <div className="card bg-medical-50 border-medical-200 mb-6">
-          <h3 className="font-medium text-medical-800 mb-2">Paano mag-verify</h3>
+          <h3 className="font-medium text-medical-800 mb-2">How to verify</h3>
           <ul className="text-sm text-medical-700 space-y-1.5">
             <li>• Hanapin ang barcode sa packaging ng gamot</li>
             <li>• I-type ang mga numero sa ilalim ng barcode</li>
-            <li>• O i-enter ang FDA Registration Number (hal. FR-XXXX-XXXX)</li>
-            <li>• Chine-check ng sistema laban sa FDA Philippines registry</li>
+            <li>• Or i-enter ang FDA Registration Number (hal. FR-XXXX-XXXX)</li>
+            <li>• Iche-check ito ng sistema against the FDA Philippines registry</li>
           </ul>
         </div>
 
         {/* Manual Lookup */}
         <div className="card-elevated mb-6">
-          <h2 className="font-semibold text-surface-900 mb-2">Manu-manong Pag-verify</h2>
+          <h2 className="font-semibold text-surface-900 mb-2">Manual Lookup</h2>
           <p className="text-sm text-surface-500 mb-4">
             I-type ang barcode number, QR code data, o FDA registration number para ma-verify ang produkto.
           </p>
@@ -87,11 +87,11 @@ export default function ScannerPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
               <input
                 type="text"
-                placeholder="I-type ang barcode, QR code, o FDA registration #"
+                placeholder="Type barcode, QR code, or FDA registration #"
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 className="input-field pl-10"
-                aria-label="Barcode, QR code, o FDA registration number"
+                aria-label="Barcode, QR code, or FDA registration number"
               />
             </div>
             <button
@@ -102,7 +102,7 @@ export default function ScannerPage() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Vine-verify...
+                  Verifying...
                 </span>
               ) : (
                 'Verify'
@@ -137,8 +137,8 @@ export default function ScannerPage() {
                   result.status === 'found' ? 'text-primary-800' :
                   result.status === 'not_found' ? 'text-amber-800' : 'text-danger-dark'
                 }`}>
-                   {result.status === 'found' ? 'Tunay ang Produkto ✓' :
-                   result.status === 'not_found' ? 'Hindi Nahanap ang Produkto' : 'Error'}
+                   {result.status === 'found' ? 'Authentic Product ✓' :
+                   result.status === 'not_found' ? 'Product Not Found' : 'Error'}
                 </h3>
                 <p className={`text-sm ${
                   result.status === 'found' ? 'text-primary-700' :
@@ -149,7 +149,7 @@ export default function ScannerPage() {
 
                 {result.medicine && (
                   <div className="mt-4 p-4 bg-white rounded-xl border border-surface-200">
-                    <h4 className="font-medium text-surface-900 mb-3">Detalye ng Produkto</h4>
+                    <h4 className="font-medium text-surface-900 mb-3">Product Details</h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="text-surface-500">Brand Name</span>
@@ -173,7 +173,7 @@ export default function ScannerPage() {
                         href={`/medicines/${result.medicine.id}`}
                         className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                       >
-                        Tignan ang mga Presyo →
+                        View Prices →
                       </Link>
                     </div>
                   </div>
@@ -186,7 +186,7 @@ export default function ScannerPage() {
                       className="btn-outline text-sm"
                     >
                       <Flag className="w-3.5 h-3.5" />
-                      Magreklamo sa Kahina-hinalang Produkto
+                      Report Suspicious Product
                     </Link>
                   </div>
                 )}

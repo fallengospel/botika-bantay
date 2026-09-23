@@ -157,16 +157,16 @@ export default function SubmitPricePage() {
             <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-primary-600" />
             </div>
-            <h1 className="heading-3 mb-2">Salamat!</h1>
+            <h1 className="heading-3 mb-2">Thanks!</h1>
             <p className="text-surface-600 mb-2">
-              Ang iyong price submission ay na-submit na para sa review.
+              Ang price submission mo ay na-submit na for review.
             </p>
             <p className="text-sm text-surface-500 mb-6">
               {selectedMedicine?.brand_name} @ {selectedBranch?.name} — ₱{price}
             </p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => { setSubmitted(false); setStep(1); setPrice(''); setSelectedMedicine(null); setSelectedBranch(null); setOutlierWarning(null); }} className="btn-primary">
-                Mag-submit pa
+                Submit Another
               </button>
               <Link href="/medicines" className="btn-secondary">
                 View Medicines
@@ -221,7 +221,7 @@ export default function SubmitPricePage() {
         {/* Step 1: Select Medicine */}
         {step === 1 && (
           <div className="animate-in">
-            <h2 className="heading-3 mb-2">Alin ang gamot?</h2>
+            <h2 className="heading-3 mb-2">Which medicine?</h2>
             <p className="text-sm text-surface-500 mb-6">I-search at piliin ang gamot na gusto mong i-submit ang presyo.</p>
             
             <div className="relative mb-4">
@@ -265,7 +265,7 @@ export default function SubmitPricePage() {
           <div className="animate-in">
             <div className="mb-6">
               <div className="badge-info mb-2">{selectedMedicine.brand_name} · {selectedMedicine.strength}</div>
-              <h2 className="heading-3 mb-2">Saan nabili?</h2>
+              <h2 className="heading-3 mb-2">Where did you buy it?</h2>
               <p className="text-sm text-surface-500">Piliin ang pharmacy branch kung saan mo nakita ang presyo.</p>
             </div>
 
@@ -295,7 +295,7 @@ export default function SubmitPricePage() {
                 <span className="badge-info">{selectedMedicine.brand_name}</span>
                 <span className="badge-info">{selectedBranch.chain?.name} · {selectedBranch.name}</span>
               </div>
-              <h2 className="heading-3 mb-2">Magkano?</h2>
+              <h2 className="heading-3 mb-2">How much?</h2>
               <p className="text-sm text-surface-500">I-enter ang presyo ng gamot sa branch na ito.</p>
             </div>
 
@@ -323,9 +323,9 @@ export default function SubmitPricePage() {
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-amber-800">Kakaibang presyo ang iyong inilagay</p>
+                      <p className="text-sm font-medium text-amber-800">That price looks unusual</p>
                       <p className="text-sm text-amber-700 mt-1">
-                        Ang median na presyo ay ₱{outlierWarning.median.toFixed(2)}. Ang iyong submission ay {outlierWarning.deviation.toFixed(0)}% mababa o mataas.
+                        Ang median na presyo ay ₱{outlierWarning.median.toFixed(2)}. Ang submission mo ay {outlierWarning.deviation.toFixed(0)}% mas mababa o mataas.
                       </p>
                     </div>
                   </div>

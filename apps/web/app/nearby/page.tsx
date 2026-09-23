@@ -57,7 +57,7 @@ export default function NearbyPage() {
         fetchNearbyBranches(position.coords.latitude, position.coords.longitude);
       },
       (error) => {
-        setLocationError('Hindi makuha ang iyong lokasyon. Mangyaring i-enable ang location access.');
+        setLocationError('Could not get your location. Please enable location access.');
         setLoading(false);
       }
     );
@@ -71,7 +71,7 @@ export default function NearbyPage() {
       setBranches(data);
     } catch (error) {
       console.error('Failed to fetch branches:', error);
-      setLocationError('Hindi na-load ang data ng pharmacy. Subukan muli.');
+      setLocationError('Failed to load pharmacy data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -85,17 +85,17 @@ export default function NearbyPage() {
   return (
     <main className="flex-1 bg-surface-50">
       <Header 
-        title="Malapit sa Iyo" 
+        title="Nearby" 
         subtitle="Hanapin ang pharmacy malapit sa lokasyon mo"
         backHref="/"
-        backLabel="Bumalik sa Home"
+        backLabel="Back to Home"
       />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-surface-600">Hinahanap ang malapit na pharmacy...</p>
+            <p className="mt-4 text-surface-600">Finding nearby pharmacies...</p>
           </div>
         ) : locationError ? (
           <div className="text-center py-12">
@@ -105,20 +105,20 @@ export default function NearbyPage() {
               onClick={getUserLocation}
               className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700"
             >
-              Subukan Muli
+              Retry
             </button>
           </div>
         ) : branches.length === 0 ? (
           <div className="text-center py-12">
             <MapPin className="w-16 h-16 text-surface-300 mx-auto mb-4" />
             <p className="text-surface-600 font-medium mb-2">Walang nakitang pharmacy sa malapit</p>
-            <p className="text-sm text-surface-500 mb-6">Subukang ilapat ang iyong lokasyon o maghanap sa ibang lugar.</p>
+            <p className="text-sm text-surface-500 mb-6">Subukang i-refresh ang location mo o maghanap sa ibang lugar.</p>
             <div className="flex gap-3 justify-center">
               <button onClick={getUserLocation} className="btn-primary text-sm">
-                I-refresh ang Lokasyon
+                Refresh Location
               </button>
               <Link href="/medicines" className="btn-secondary text-sm">
-                Maghanap ng Gamot
+                Search Medicines
               </Link>
             </div>
           </div>

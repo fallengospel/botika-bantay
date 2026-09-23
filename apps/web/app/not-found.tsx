@@ -15,9 +15,9 @@ export default function NotFound() {
             <LogoLockup markSize={24} textClass="text-base" />
           </div>
           <h1 className="text-6xl font-bold text-surface-300 mb-4">404</h1>
-          <h2 className="heading-3 mb-2">Hindi nahanap ang page</h2>
+          <h2 className="heading-3 mb-2">Page not found</h2>
           <p className="text-brand-muted">
-            Ang page na hinahanap mo ay hindi available o inilipat na.
+            Parang hindi available ang page na hinahanap mo — baka inilipat na.
           </p>
         </div>
 
@@ -30,7 +30,7 @@ export default function NotFound() {
               <Search className="w-5 h-5 text-brand" />
             </div>
             <div>
-              <p className="font-medium text-brand-ink">Maghanap ng Gamot</p>
+              <p className="font-medium text-brand-ink">Search Medicines</p>
               <p className="text-sm text-brand-muted">I-compare ang presyo sa mga pharmacy</p>
             </div>
           </Link>
@@ -42,7 +42,7 @@ export default function NotFound() {
               <MapPin className="w-5 h-5 text-brand" />
             </div>
             <div>
-              <p className="font-medium text-brand-ink">Malapit sa Iyo</p>
+              <p className="font-medium text-brand-ink">Nearby</p>
               <p className="text-sm text-brand-muted">Hanapin ang pinakamalapit na pharmacy</p>
             </div>
           </Link>
@@ -54,7 +54,7 @@ export default function NotFound() {
               <Pill className="w-5 h-5 text-brand-deep" />
             </div>
             <div>
-              <p className="font-medium text-brand-ink">Tunay Check</p>
+              <p className="font-medium text-brand-ink">Verify</p>
               <p className="text-sm text-brand-muted">I-verify kung authentic ang gamot</p>
             </div>
           </Link>
@@ -65,7 +65,7 @@ export default function NotFound() {
           className="inline-flex items-center gap-2 text-sm text-brand-muted hover:text-brand transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Bumalik sa Home
+          Back to Home
         </Link>
       </div>
     </div>

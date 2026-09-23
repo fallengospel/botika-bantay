@@ -38,19 +38,19 @@ export default function Home() {
             {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-1">
               <Link href="/medicines" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-brand hover:bg-brand-mint rounded-lg transition-all">
-                Presyo Check
+                Price Check
               </Link>
               <Link href="/submit" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-brand hover:bg-brand-mint rounded-lg transition-all">
-                Magsumite
+                Submit Price
               </Link>
               <Link href="/scanner" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-brand hover:bg-brand-mint rounded-lg transition-all">
-                Tunay Check
+                Verify
               </Link>
               <Link href="/nearby" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-brand hover:bg-brand-mint rounded-lg transition-all">
-                Malapit
+                Nearby
               </Link>
               <Link href="/report" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-brand hover:bg-brand-mint rounded-lg transition-all">
-                Magreklamo
+                Report
               </Link>
             </div>
 
@@ -67,7 +67,7 @@ export default function Home() {
             <button
               onClick={() => setMobileNavOpen(!mobileNavOpen)}
               className="md:hidden p-2 rounded-lg text-surface-600 hover:bg-brand-mint transition-colors"
-              aria-label={mobileNavOpen ? 'Isara ang menu' : 'Buksan ang menu'}
+              aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileNavOpen}
             >
               {mobileNavOpen ? (
@@ -84,26 +84,26 @@ export default function Home() {
           <div className="md:hidden bg-white border-t border-brand-line shadow-lg">
             <div className="px-4 py-3 space-y-1">
               <Link href="/medicines" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-brand-mint hover:text-brand rounded-lg transition-all">
-                Presyo Check
+                Price Check
               </Link>
               <Link href="/submit" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-brand-mint hover:text-brand rounded-lg transition-all">
-                Magsumite ng Presyo
+                Submit Price
               </Link>
               <Link href="/scanner" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-brand-mint hover:text-brand rounded-lg transition-all">
-                Tunay Check (Scanner)
+                Verify Medicine
               </Link>
               <Link href="/nearby" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-brand-mint hover:text-brand rounded-lg transition-all">
-                Malapit sa Iyo
+                Nearby Pharmacies
               </Link>
               <Link href="/report" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-brand-mint hover:text-brand rounded-lg transition-all">
-                Magreklamo
+                Report Product
               </Link>
               <div className="border-t border-brand-line mt-2 pt-2 space-y-1">
                 <Link href="/login" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-600 hover:bg-brand-paper rounded-lg transition-all">
                   Sign in
                 </Link>
                 <Link href="/register" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-semibold text-white bg-brand hover:bg-brand-deep rounded-lg text-center shadow-md transition-colors">
-                  Magparehistro
+                  Get Started
                 </Link>
               </div>
             </div>
@@ -119,21 +119,21 @@ export default function Home() {
 
         <div className="page-container relative">
           <div className="max-w-4xl mx-auto text-center">
-            {/* Eyebrow */}
+            {/* Eyebrow — brand tagline */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-mint border border-brand/15 mb-8 animate-in">
               <LogoMark size={16} />
               <span className="text-sm font-semibold text-brand-deep">Presyo na Tama, Gamot na Tunay</span>
             </div>
 
-            {/* Headline — vision-forward */}
+            {/* Headline — Taglish branding */}
             <h1 className="heading-1 mb-6 animate-in stagger-1 text-brand-ink">
-              Hanapin ang <span className="text-brand">pinakamurang presyo</span> ng iyong gamot
+              Find the <span className="text-brand">lowest price</span> for your medicine
             </h1>
 
-            {/* Subheadline — mission */}
+            {/* Subheadline — Taglish content */}
             <p className="text-lg sm:text-xl text-brand-muted max-w-2xl mx-auto mb-10 animate-in stagger-2">
-              Para sa bawat Pilipinong pamilya: i-compare ang presyo sa Mercury Drug, Watsons, Rose Pharmacy at iba pa —
-              at i-verify ang authenticity gamit ang FDA Philippines registry, mula Aparri hanggang Jolo.
+              Para sa bawat Pilipinong pamilya: compare prices across Mercury Drug, Watsons, Rose Pharmacy and more —
+              then verify authenticity against the FDA Philippines registry, from Aparri to Jolo.
             </p>
 
             {/* Search Bar */}
@@ -143,7 +143,7 @@ export default function Home() {
                   <Search className="ml-5 w-5 h-5 text-brand-muted" />
                   <input
                     type="text"
-                    placeholder="Maghanap ng gamot... (hal. Biogesic, Paracetamol)"
+                    placeholder="Search medicine... (e.g. Biogesic, Paracetamol)"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1 px-4 py-4 sm:py-5 text-brand-ink placeholder-brand-muted focus:outline-none bg-transparent"
@@ -153,7 +153,7 @@ export default function Home() {
                     type="submit"
                     className="m-2 px-6 py-3 bg-brand text-white rounded-xl font-semibold hover:bg-brand-deep transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                   >
-                    Hanapin
+                    Search
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -176,7 +176,7 @@ export default function Home() {
             {/* Verified badge */}
             <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand-mint px-3 py-1.5 animate-in stagger-4">
               <LogoMark size={16} />
-              <span className="text-xs font-semibold text-brand-deep">FDA Verified · Tunay</span>
+              <span className="text-xs font-semibold text-brand-deep">FDA Verified · Authentic</span>
             </div>
           </div>
         </div>
@@ -187,9 +187,9 @@ export default function Home() {
         <div className="page-container">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
             {[
-              { value: '20+', label: 'Gamot', icon: Pill },
+              { value: '20+', label: 'Medicines', icon: Pill },
               { value: '5', label: 'Pharmacy Chains', icon: MapPin },
-              { value: '6', label: 'Mga Sangay', icon: Shield },
+              { value: '6', label: 'Branches', icon: Shield },
               { value: '100%', label: 'FDA Verified', icon: CheckCircle2 },
             ].map((stat, i) => (
               <div key={i} className="text-center">
@@ -210,34 +210,34 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-mint text-brand-deep text-sm font-medium mb-4">
               <Heart className="w-3.5 h-3.5" />
-              Ang Aming Layunin
+              Our Mission
             </div>
-            <h2 className="heading-2 mb-4 text-brand-ink">Dalawang problema, isang solusyon</h2>
+            <h2 className="heading-2 mb-4 text-brand-ink">Two problems, one solution</h2>
             <p className="text-lg text-brand-muted">
-              Ginawa para sa Pilipino, ng Pilipino. Hindi mo na kailangan ng dalawang app —
-              presyo at authenticity, nandito na lahat.
+              Ginawa para sa Pilipino, ng Pilipino. You don&apos;t need two apps anymore —
+              price and authenticity, nandito na lahat.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Presyo Check */}
+            {/* Price Check */}
             <div className="card-elevated group hover:shadow-impeccable-xl transition-all duration-300">
               <div className="flex items-start gap-4 mb-6">
                 <div className="p-3 rounded-xl bg-brand text-white shadow-glow">
                   <TrendingDown className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="heading-3">Presyo Check</h3>
-                  <p className="text-brand-muted mt-1">I-compare ang presyo sa bawat pharmacy</p>
+                  <h3 className="heading-3">Price Check</h3>
+                  <p className="text-brand-muted mt-1">Compare prices sa bawat pharmacy — para alam mo agad kung saan mas mura.</p>
                 </div>
               </div>
 
               <ul className="space-y-3 mb-6">
                 {[
-                  'Search by brand name o generic name',
+                  'Search by brand name or generic name',
                   'Side-by-side comparison sa Mercury, Watsons, Rose',
-                  'Malaman ang savings pag gumamit ng generic',
-                  'Malaman kung alin ang pinakamalapit',
+                  'See how much you save when you go generic',
+                  'Find the nearest branch with the best price',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-surface-600">
                     <CheckCircle2 className="w-4 h-4 text-brand mt-0.5 shrink-0" />
@@ -247,29 +247,29 @@ export default function Home() {
               </ul>
 
               <Link href="/medicines" className="inline-flex items-center gap-2 text-brand font-medium text-sm hover:gap-3 transition-all">
-                Mag-compare na
+                Compare prices
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
-            {/* Tunay Check */}
+            {/* Authenticity Check */}
             <div className="card-elevated group hover:shadow-impeccable-xl transition-all duration-300">
               <div className="flex items-start gap-4 mb-6">
                 <div className="p-3 rounded-xl bg-brand-ink text-white shadow-impeccable-md">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="heading-3">Tunay Check</h3>
-                  <p className="text-brand-muted mt-1">I-verify kung FDA-registered ang gamot</p>
+                  <h3 className="heading-3">Authenticity Check</h3>
+                  <p className="text-brand-muted mt-1">I-verify kung FDA-registered ang gamot bago mo bilhin.</p>
                 </div>
               </div>
 
               <ul className="space-y-3 mb-6">
                 {[
-                  'Scan ang barcode o QR code ng gamot',
-                  'Cross-reference sa FDA Philippines registry',
-                  'Malaman kung tunay o peke ang produkto',
-                  'I-report ang mga kahina-hinalang gamot',
+                  'Scan the barcode or QR code on the pack',
+                  'Cross-check sa FDA Philippines registry',
+                  'Know right away if the product is authentic',
+                  'Report anything that looks suspicious',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-surface-600">
                     <CheckCircle2 className="w-4 h-4 text-brand-gold mt-0.5 shrink-0" />
@@ -279,7 +279,7 @@ export default function Home() {
               </ul>
 
               <Link href="/scanner" className="inline-flex items-center gap-2 text-brand font-medium text-sm hover:gap-3 transition-all">
-                Mag-verify na
+                Verify a medicine
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -293,11 +293,11 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-mint text-brand-deep text-sm font-medium mb-4">
               <Zap className="w-3.5 h-3.5" />
-              Paano Gamitin
+              How It Works
             </div>
-            <h2 className="heading-2 mb-4 text-brand-ink">Tatlong hakbang lang</h2>
+            <h2 className="heading-2 mb-4 text-brand-ink">Three simple steps</h2>
             <p className="text-lg text-brand-muted">
-              Madali lang gamitin. Walang kumplikadong proseso.
+              Super simple gamitin — walang kumplikadong process.
             </p>
           </div>
 
@@ -305,20 +305,20 @@ export default function Home() {
             {[
               {
                 step: '01',
-                title: 'Maghanap',
-                description: 'I-type ang pangalan ng gamot na kailangan mo. Puwede brand name o generic name.',
+                title: 'Search',
+                description: 'Type the medicine you need. Brand name or generic name, both work.',
                 icon: Search,
               },
               {
                 step: '02',
-                title: 'I-compare',
-                description: 'Tingnan ang presyo sa bawat pharmacy. Malaman mo agad kung saan ang pinakamura.',
+                title: 'Compare',
+                description: 'See prices side by side and find where it costs the least.',
                 icon: TrendingDown,
               },
               {
                 step: '03',
-                title: 'I-verify',
-                description: 'I-scan ang barcode para malaman kung FDA-registered at tunay ang gamot.',
+                title: 'Verify',
+                description: 'Scan the barcode to check if it’s FDA-registered and authentic.',
                 icon: ScanLine,
               },
             ].map((item, i) => (
@@ -338,9 +338,9 @@ export default function Home() {
       <section className="section bg-brand-paper">
         <div className="page-container">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="heading-3 mb-4 text-brand-ink">Mga Kasamang Pharmacy</h2>
+            <h2 className="heading-3 mb-4 text-brand-ink">Partner Pharmacies</h2>
             <p className="text-brand-muted">
-              Suriin ang presyo sa mga pangunahing pharmacy chain sa buong Pilipinas.
+              Check prices sa major pharmacy chains across the Philippines.
             </p>
           </div>
 
@@ -376,15 +376,15 @@ export default function Home() {
                   Check any medicine against the FDA Philippines registry, from Aparri to Jolo.
                 </p>
                 <p className="mt-4 text-white/60 text-sm max-w-md">
-                  Isang tanda ng tiwala mula paghahanap hanggang pagbili — para sa bawat
-                  peso-conscious na sambahayan sa buong bansa.
+                  Isang sign of trust mula search hanggang checkout — para sa bawat
+                  peso-conscious na household sa buong bansa.
                 </p>
                 <div className="mt-8">
                   <Link
                     href="/medicines"
                     className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 font-semibold text-white transition-colors duration-150 hover:bg-brand-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink"
                   >
-                    I-check ang gamot mo
+                    Check your medicine
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -392,9 +392,9 @@ export default function Home() {
 
               <div className="grid sm:grid-cols-3 gap-4 lg:pt-4">
                 {[
-                  { icon: Coins, title: 'Tipid Tips', description: 'Malaman kung magkano ang matitipid sa generic kaysa branded.' },
-                  { icon: ShieldCheck, title: 'Ligtas na Pamimili', description: 'I-verify ang bawat gamot bago mo bilhin. Walang peke.' },
-                  { icon: MapPin, title: 'Malapit Sa\'Yo', description: 'Hanapin ang pinakamalapit na pharmacy na may best price.' },
+                  { icon: Coins, title: 'Save More', description: 'See how much you’ll save when you switch from branded to generic.' },
+                  { icon: ShieldCheck, title: 'Shop Safe', description: 'Verify every medicine before you buy — no fakes, no worries.' },
+                  { icon: MapPin, title: 'Nearby Deals', description: 'Find the closest pharmacy with the best price near you.' },
                 ].map((item, i) => (
                   <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/10">
                     <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand/25 text-white mb-3">
@@ -414,25 +414,25 @@ export default function Home() {
       <section className="section bg-white border-t border-brand-line">
         <div className="page-container">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="heading-3 mb-4 text-brand-ink">Pinagkakatiwalaan ng mga Pilipino</h2>
+            <h2 className="heading-3 mb-4 text-brand-ink">Trusted by Filipino families</h2>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6">
             {[
               {
-                quote: 'Nakatipid ako ng ₱200 buwan-buwan sa maintenance meds ko. Salamat BotikaBantay!',
+                quote: 'Nakatipid ako ng ₱200 every month sa maintenance meds ko. Super helpful ng BotikaBantay!',
                 author: 'Maria S.',
                 role: 'Manila',
                 stars: 5,
               },
               {
-                quote: 'Nalaman ko na peke pala ang nabili kong gamot dahil sa Tunay Check. Nakakatakot!',
+                quote: 'Buti na lang na-verify ko sa Authenticity Check — peke pala yung nabili ko. Ingat tayo!',
                 author: 'Juan D.',
                 role: 'Cebu',
                 stars: 5,
               },
               {
-                quote: 'Madali gamitin at walang kumplikado. Perfect sa mga matatanda na gaya ko.',
+                quote: 'Easy to use and hindi complicated. Perfect even for seniors like me.',
                 author: 'Lola Rosa',
                 role: 'Davao',
                 stars: 5,
@@ -472,19 +472,19 @@ export default function Home() {
                 <LogoLockup tone="reversedBrand" markSize={48} textClass="text-3xl" />
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Simulan nang mag-save ngayon
+                Start saving today
               </h2>
               <p className="text-lg text-white/85 max-w-2xl mx-auto mb-8">
-                Hanapin ang pinakamurang presyo ng iyong gamot at i-verify ang authenticity.
-                Libre at walang kailangan na account.
+                Hanapin ang pinakamurang presyo for your medicine and verify authenticity in one place.
+                Free — no account needed.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/medicines" className="px-8 py-4 bg-white text-brand-deep rounded-xl font-semibold hover:bg-brand-mint transition-colors shadow-impeccable-lg">
-                  Mag-compare ng Presyo
+                  Compare Prices
                 </Link>
                 <Link href="/scanner" className="px-8 py-4 bg-brand-deep text-white rounded-xl font-semibold hover:bg-brand-ink transition-colors border border-white/10">
-                  I-verify ang Gamot
+                  Verify Medicine
                 </Link>
               </div>
             </div>
@@ -508,14 +508,14 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Features</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/medicines" className="hover:text-brand-mint transition-colors">Presyo Check</Link></li>
-                <li><Link href="/scanner" className="hover:text-brand-mint transition-colors">Tunay Check</Link></li>
+                <li><Link href="/medicines" className="hover:text-brand-mint transition-colors">Price Check</Link></li>
+                <li><Link href="/scanner" className="hover:text-brand-mint transition-colors">Authenticity Check</Link></li>
                 <li><Link href="/nearby" className="hover:text-brand-mint transition-colors">Nearby Pharmacies</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold text-white mb-4">Mga Pharmacy</h4>
+              <h4 className="font-semibold text-white mb-4">Pharmacies</h4>
               <ul className="space-y-2 text-sm">
                 <li>Mercury Drug</li>
                 <li>Watsons</li>
@@ -539,7 +539,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-white/50">
-              &copy; {new Date().getFullYear()} BotikaBantay. Hindi ito kapalit ng propesyonal na medical advice.
+              &copy; {new Date().getFullYear()} BotikaBantay. Not a substitute for professional medical advice.
             </p>
             <p className="text-xs text-white/40">
               Data sourced from FDA Philippines public registry

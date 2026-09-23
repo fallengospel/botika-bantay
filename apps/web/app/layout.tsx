@@ -18,7 +18,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'BotikaBantay - Presyo na Tama, Gamot na Tunay',
   description:
-    'I-compare ang presyo ng gamot sa Mercury Drug, Watsons, Rose Pharmacy at iba pa. I-verify sa FDA Philippines registry — mula Aparri hanggang Jolo.',
+    'Compare medicine prices across Mercury Drug, Watsons, Rose Pharmacy and more. Verify authenticity with the FDA Philippines registry — from Aparri to Jolo.',
   keywords: ['medicine', 'price comparison', 'Philippines', 'pharmacy', 'FDA', 'verification', 'botika', 'gamot', 'presyo'],
   manifest: '/manifest.json',
   appleWebApp: {
