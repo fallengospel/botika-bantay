@@ -6,6 +6,13 @@ const OUTLIER_THRESHOLD = 0.40;
 const DAILY_SUBMISSION_LIMIT = 10;
 
 export async function GET(request: Request) {
+  // QA-006: rate limit — heavy endpoint (full scan + manual joins)
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const rateLimit = checkRateLimit(`prices:${ip}`, 60, 60000);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const medicineId = searchParams.get('medicineId');
   const branchId = searchParams.get('branchId');
@@ -14,10 +21,20 @@ export async function GET(request: Request) {
     return NextResponse.json([]);
   }
 
-  // Fetch prices without joins
+  // QA-005: malformed UUID filters cannot match any row → empty result, not 500
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (medicineId && !UUID_RE.test(medicineId)) {
+    return NextResponse.json([]);
+  }
+  if (branchId && !UUID_RE.test(branchId)) {
+    return NextResponse.json([]);
+  }
+
+  // Fetch prices without joins — QA-004: never expose rejected outlier rows publicly
   let query = supabase
     .from('prices')
     .select('*')
+    .neq('verification_status', 'rejected')
     .order('price');
 
   if (medicineId) {

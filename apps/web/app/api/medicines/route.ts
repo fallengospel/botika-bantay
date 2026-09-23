@@ -20,14 +20,21 @@ export async function GET(request: Request) {
   }
 
   if (id) {
+    // QA-002/003: invalid or unknown id → null (200) so pages show not-found UI, not 500
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(id)) {
+      return NextResponse.json(null);
+    }
+
     const { data, error } = await supabase
       .from('medicines')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('medicines by id error:', error.message);
+      return NextResponse.json(null);
     }
 
     return NextResponse.json(data);

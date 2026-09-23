@@ -41,7 +41,15 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // QA-001: never leak raw DB errors (RLS/schema details) to clients
+    if (error.message?.includes('row-level security')) {
+      return NextResponse.json(
+        { error: 'Hindi pa naka-set up ang security settings para sa reports. Subukan muli mamaya o kontakin ang support.' },
+        { status: 503 }
+      );
+    }
+    console.error('reports insert error:', error.message);
+    return NextResponse.json({ error: 'Hindi ma-save ang report. Subukan muli mamaya.' }, { status: 500 });
   }
 
   return NextResponse.json(data);

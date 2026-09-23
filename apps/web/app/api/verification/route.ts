@@ -42,6 +42,14 @@ export async function POST(request: Request) {
     );
   }
 
+  // QA-007: bound input length — real barcodes/FDA codes are well under 64 chars
+  if (scannedCode.trim().length > 64) {
+    return NextResponse.json(
+      { error: 'scannedCode must be 64 characters or fewer' },
+      { status: 400 }
+    );
+  }
+
   const code = scannedCode.trim();
   let medicine = null;
 
