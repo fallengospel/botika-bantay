@@ -136,8 +136,16 @@ CREATE POLICY "Public read access for verified prices" ON prices FOR SELECT USIN
 CREATE POLICY "Allow price insert" ON prices FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow verification record insert" ON verification_records FOR INSERT WITH CHECK (true);
 
+-- Public insert (anon web/mobile clients — service role is used for admin updates)
+-- QA: report/price-submission inserts must work without an authenticated session
+DROP POLICY IF EXISTS "Users can insert price submissions" ON price_submissions;
+CREATE POLICY "Allow price submission insert" ON price_submissions FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Users can view own submissions" ON price_submissions;
+CREATE POLICY "Allow view price submissions" ON price_submissions FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Users can insert reports" ON suspicious_product_reports;
+CREATE POLICY "Allow report insert" ON suspicious_product_reports FOR INSERT WITH CHECK (true);
+
 -- Authenticated user policies
-CREATE POLICY "Users can insert price submissions" ON price_submissions FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can view own submissions" ON price_submissions FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can insert reports" ON suspicious_product_reports FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);

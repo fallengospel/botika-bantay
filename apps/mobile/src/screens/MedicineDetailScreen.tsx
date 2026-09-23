@@ -12,12 +12,12 @@ import { CheckCircle, AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react-n
 import { getMedicineById, getPricesForMedicine } from '../services/supabase';
 import { formatPrice } from '../utils/format';
 import PriceCard from '../components/price/PriceCard';
-import { MedicineDetailRouteProp } from '../types/navigation';
+import { MedicineDetailRouteProp, NavigationProp } from '../types/navigation';
 import { colors, font, space, radius, MIN_TOUCH } from '../theme';
 
 interface Props {
   route: MedicineDetailRouteProp;
-  navigation: any;
+  navigation: NavigationProp;
 }
 
 interface Medicine {

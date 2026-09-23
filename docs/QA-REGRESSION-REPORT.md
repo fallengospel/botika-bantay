@@ -159,7 +159,11 @@
 
 1. **BLOCKER (external):** Run RLS policy SQL in Supabase SQL Editor — until then
    report/price-submission inserts fail by design (now fail *gracefully*).
+   **SQL:** `supabase/migrations/20260923_production_hardening_v1_4_0.sql` (v1.4.0).
 2. QA-008: re-verify rate limits on staging deployment; Redis-backed limiter before scale.
-3. QA-009: ambiguous-match UX improvement.
+3. ~~QA-009: ambiguous-match UX improvement.~~ **FIXED in v1.4.0** — step-3 returns
+   `ambiguous` when >1 match (limit 10, suggestions ≤5).
 4. QA-010: manual admin auth test on staging with a confirmed account.
-5. QA-011: moderation cascade (`price_submissions` → `prices.verification_status`).
+5. ~~QA-011: moderation cascade (`price_submissions` → `prices.verification_status`).~~
+   **FIXED in v1.4.0** — public GET only `verified`; admin PATCH cascades via
+   `supabaseAdmin` (`SUPABASE_SERVICE_ROLE_KEY` required on Vercel).
