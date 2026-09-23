@@ -73,8 +73,8 @@ export default function ScannerScreen({ navigation }: Props) {
 
       if (result.status === 'found' && result.medicine) {
         Alert.alert(
-          'Product Verified ✓',
-          `${result.medicine.brand_name} is in our FDA-registered catalog.\n\nGeneric: ${result.medicine.generic_name}\nManufacturer: ${result.medicine.manufacturer}`,
+          'Product Found in Catalog',
+          `${result.medicine.brand_name} (${result.medicine.generic_name}) is listed in our database.\n\nManufacturer: ${result.medicine.manufacturer || '—'}\nFDA Registration: ${result.medicine.fda_registration_number || 'N/A'}\n\nNote: This checks BotikaBantay's catalog of FDA-registered products, not a live FDA API.`,
           [
             {
               text: 'View Prices',
@@ -87,6 +87,12 @@ export default function ScannerScreen({ navigation }: Props) {
               onPress: () => setScanned(false),
             },
           ]
+        );
+      } else if (result.status === 'rate_limited') {
+        Alert.alert(
+          'Too Many Checks',
+          'Masyadong maraming check. Wait a few seconds and try again.',
+          [{ text: 'OK', onPress: () => setScanned(false) }]
         );
       } else if (result.status === 'not_found') {
         Alert.alert(
@@ -143,7 +149,7 @@ export default function ScannerScreen({ navigation }: Props) {
             style={styles.secondaryButton}
             onPress={openSettings}
             accessibilityRole="button"
-            accessibility-label="Open phone settings"
+            accessibilityLabel="Open phone settings"
           >
             <Settings size={18} color={colors.brand} />
             <Text style={styles.secondaryButtonText}>Open Phone Settings</Text>
@@ -153,7 +159,7 @@ export default function ScannerScreen({ navigation }: Props) {
           style={styles.cancelButton}
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
-          accessibility-label="Cancel and go back"
+          accessibilityLabel="Cancel and go back"
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
@@ -192,7 +198,7 @@ export default function ScannerScreen({ navigation }: Props) {
               style={styles.closeButton}
               onPress={() => navigation.goBack()}
               accessibilityRole="button"
-              accessibility-label="Close scanner"
+              accessibilityLabel="Close scanner"
             >
               <X size={24} color="#fff" />
             </TouchableOpacity>

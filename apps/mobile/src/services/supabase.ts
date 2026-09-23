@@ -138,14 +138,47 @@ export async function getPricesForMedicine(medicineId: string) {
 export type VerifyResult =
   | { status: 'found'; message: string; medicine: any }
   | { status: 'not_found'; message: string; medicine: null }
+  | { status: 'rate_limited'; message: string; medicine: null }
   | { status: 'error'; message: string; medicine: null };
 
+/** In-memory rate limit mirroring web /api/verification (30/min). */
+const verifyWindowMs = 60_000;
+const verifyMax = 30;
+const verifyHits: number[] = [];
+
+function checkVerifyRateLimit(): boolean {
+  const now = Date.now();
+  while (verifyHits.length > 0 && now - verifyHits[0] > verifyWindowMs) {
+    verifyHits.shift();
+  }
+  if (verifyHits.length >= verifyMax) return false;
+  verifyHits.push(now);
+  return true;
+}
+
+/** Escape characters that break PostgREST `.or()` filters. */
+function sanitizeCode(code: string): string {
+  return code
+    .trim()
+    .replace(/[,()%*]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 64);
+}
+
 export async function verifyMedicine(scannedCode: string): Promise<VerifyResult> {
-  const code = (scannedCode || '').trim().slice(0, 64);
+  const code = sanitizeCode(scannedCode || '');
   if (!code) {
     return {
       status: 'error',
       message: 'Please scan a valid barcode.',
+      medicine: null,
+    };
+  }
+
+  if (!checkVerifyRateLimit()) {
+    return {
+      status: 'rate_limited',
+      message: 'Too many checks. Wait a moment and try again.',
       medicine: null,
     };
   }
@@ -163,7 +196,7 @@ export async function verifyMedicine(scannedCode: string): Promise<VerifyResult>
       await logVerification(supabase, code, barcodeResult.data.id, 'found');
       return {
         status: 'found',
-        message: 'Product is in our FDA-registered catalog',
+        message: `Product found in our catalog: ${barcodeResult.data.brand_name} (${barcodeResult.data.generic_name}). FDA Registration ${barcodeResult.data.fda_registration_number || 'N/A'} — this checks our database, not a live FDA API.`,
         medicine: barcodeResult.data,
       };
     }
@@ -180,8 +213,35 @@ export async function verifyMedicine(scannedCode: string): Promise<VerifyResult>
       await logVerification(supabase, code, fdaResult.data.id, 'found');
       return {
         status: 'found',
-        message: 'Product is in our FDA-registered catalog',
+        message: `Product found in our catalog: ${fdaResult.data.brand_name} (${fdaResult.data.generic_name}). FDA Registration ${fdaResult.data.fda_registration_number || 'N/A'} — this checks our database, not a live FDA API.`,
         medicine: fdaResult.data,
+      };
+    }
+
+    // Fuzzy fallback (parity with web API) — sanitized for PostgREST
+    const { data: fuzzy } = await supabase
+      .from('medicines')
+      .select('*')
+      .or(
+        `brand_name.ilike.%${code}%,generic_name.ilike.%${code}%,barcode.ilike.%${code}%,fda_registration_number.ilike.%${code}%`
+      )
+      .limit(2);
+
+    if (fuzzy && fuzzy.length === 1) {
+      await logVerification(supabase, code, fuzzy[0].id, 'found');
+      return {
+        status: 'found',
+        message: `Product found in our catalog: ${fuzzy[0].brand_name} (${fuzzy[0].generic_name}). FDA Registration ${fuzzy[0].fda_registration_number || 'N/A'} — this checks our database, not a live FDA API.`,
+        medicine: fuzzy[0],
+      };
+    }
+
+    if (fuzzy && fuzzy.length > 1) {
+      await logVerification(supabase, code, null, 'ambiguous');
+      return {
+        status: 'not_found',
+        message: `Found ${fuzzy.length} possible matches. Please be more specific or scan again.`,
+        medicine: null,
       };
     }
 

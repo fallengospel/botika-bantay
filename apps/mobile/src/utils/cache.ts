@@ -28,14 +28,36 @@ export async function getCache<T>(key: string, opts?: ReadOpts): Promise<T | nul
     const raw = await AsyncStorage.getItem(`${CACHE_PREFIX}${key}`);
     if (!raw) return null;
 
-    const entry: CacheEntry<T> = JSON.parse(raw);
-    const isExpired = Date.now() - entry.timestamp > entry.ttl;
+    const entry: unknown = JSON.parse(raw);
+    if (
+      !entry ||
+      typeof entry !== 'object' ||
+      !('data' in entry) ||
+      !('timestamp' in entry) ||
+      !('ttl' in entry) ||
+      typeof (entry as CacheEntry<T>).timestamp !== 'number' ||
+      typeof (entry as CacheEntry<T>).ttl !== 'number'
+    ) {
+      await AsyncStorage.removeItem(`${CACHE_PREFIX}${key}`);
+      return null;
+    }
+
+    const parsed = entry as CacheEntry<T>;
+    const isExpired = Date.now() - parsed.timestamp > parsed.ttl;
 
     if (isExpired && !opts?.allowExpired) {
       return null;
     }
 
-    return entry.data;
+    // Reject corrupt list caches (Miguel null/shape guards)
+    if (key.startsWith('medicines:') || key.startsWith('prices:')) {
+      if (!Array.isArray(parsed.data)) {
+        await AsyncStorage.removeItem(`${CACHE_PREFIX}${key}`);
+        return null;
+      }
+    }
+
+    return parsed.data;
   } catch {
     return null;
   }

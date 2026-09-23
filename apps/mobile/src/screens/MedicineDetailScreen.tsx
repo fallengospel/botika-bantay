@@ -146,7 +146,7 @@ export default function MedicineDetailScreen({ route, navigation }: Props) {
           style={styles.secondaryButton}
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
-          accessibility-label="Go back"
+          accessibilityLabel="Go back"
         >
           <ArrowLeft size={18} color={colors.brand} />
           <Text style={styles.secondaryButtonText}>Go Back</Text>
@@ -167,7 +167,7 @@ export default function MedicineDetailScreen({ route, navigation }: Props) {
           style={styles.primaryButton}
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
-          accessibility-label="Go back to search"
+          accessibilityLabel="Go back to search"
         >
           <Text style={styles.primaryButtonText}>Back to Search</Text>
         </TouchableOpacity>
@@ -175,9 +175,12 @@ export default function MedicineDetailScreen({ route, navigation }: Props) {
     );
   }
 
-  const sortedPrices = [...prices].sort((a, b) => a.price - b.price);
-  const lowestPrice = sortedPrices[0]?.price || 0;
-  const highestPrice = sortedPrices[sortedPrices.length - 1]?.price || 0;
+  const sortedPrices = [...prices]
+    .filter((p) => p && Number.isFinite(Number(p.price)))
+    .sort((a, b) => Number(a.price) - Number(b.price));
+  const lowestPrice = sortedPrices.length > 0 ? Number(sortedPrices[0].price) : 0;
+  const highestPrice =
+    sortedPrices.length > 0 ? Number(sortedPrices[sortedPrices.length - 1].price) : 0;
   const savings = highestPrice - lowestPrice;
   const pharmacyCount = new Set(
     prices.map((p) => p.branch?.id).filter(Boolean)
@@ -207,27 +210,27 @@ export default function MedicineDetailScreen({ route, navigation }: Props) {
         <View style={styles.infoGrid}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Brand Name</Text>
-            <Text style={styles.infoValue}>{medicine.brand_name}</Text>
+            <Text style={styles.infoValue}>{medicine.brand_name || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Generic Name</Text>
-            <Text style={styles.infoValue}>{medicine.generic_name}</Text>
+            <Text style={styles.infoValue}>{medicine.generic_name || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Dosage Form</Text>
-            <Text style={styles.infoValue}>{medicine.dosage_form}</Text>
+            <Text style={styles.infoValue}>{medicine.dosage_form || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Strength</Text>
-            <Text style={styles.infoValue}>{medicine.strength}</Text>
+            <Text style={styles.infoValue}>{medicine.strength || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Manufacturer</Text>
-            <Text style={styles.infoValue}>{medicine.manufacturer}</Text>
+            <Text style={styles.infoValue}>{medicine.manufacturer || '—'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>FDA Registration</Text>
-            <Text style={styles.infoValue}>{medicine.fda_registration_number}</Text>
+            <Text style={styles.infoValue}>{medicine.fda_registration_number || '—'}</Text>
           </View>
         </View>
       </View>
@@ -237,7 +240,7 @@ export default function MedicineDetailScreen({ route, navigation }: Props) {
           <CheckCircle size={24} color={colors.brand} />
           <View style={styles.savingsContent}>
             <Text style={styles.savingsTitle}>
-              You can save up to {formatPrice(savings)}
+              You can save up to {formatPrice(Number(savings) || 0)}
             </Text>
             <Text style={styles.savingsSubtitle}>
               by choosing the lowest price option
@@ -262,7 +265,7 @@ export default function MedicineDetailScreen({ route, navigation }: Props) {
               style={styles.primaryButton}
               onPress={() => fetchMedicineDetails(true)}
               accessibilityRole="button"
-              accessibility-label="Refresh prices"
+              accessibilityLabel="Refresh prices"
             >
               <Text style={styles.primaryButtonText}>Refresh Prices</Text>
             </TouchableOpacity>

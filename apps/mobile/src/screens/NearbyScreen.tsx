@@ -176,7 +176,7 @@ export default function NearbyScreen({ navigation }: Props) {
         style={styles.directionsButton}
         onPress={() => getDirections(item.latitude, item.longitude)}
         accessibilityRole="button"
-        accessibility-label={`Get directions to ${item.name}`}
+        accessibilityLabel={`Get directions to ${item.name}`}
       >
         <Navigation size={18} color={colors.brandDeep} />
         <Text style={styles.directionsText}>Get Directions</Text>
@@ -189,7 +189,7 @@ export default function NearbyScreen({ navigation }: Props) {
       style={styles.secondaryButton}
       onPress={() => navigation.navigate('Medicines')}
       accessibilityRole="button"
-      accessibility-label="Search medicines"
+      accessibilityLabel="Search medicines"
     >
       <Search size={18} color={colors.brand} />
       <Text style={styles.secondaryButtonText}>Search Medicines</Text>
@@ -213,7 +213,7 @@ export default function NearbyScreen({ navigation }: Props) {
             style={styles.primaryButton}
             onPress={openSettings}
             accessibilityRole="button"
-            accessibility-label="Open settings"
+            accessibilityLabel="Open settings"
           >
             <Settings size={18} color={colors.white} />
             <Text style={styles.primaryButtonText}>Open Settings</Text>
@@ -222,7 +222,7 @@ export default function NearbyScreen({ navigation }: Props) {
             style={styles.secondaryButton}
             onPress={() => getUserLocation()}
             accessibilityRole="button"
-            accessibility-label="Try again"
+            accessibilityLabel="Try again"
           >
             <Text style={styles.secondaryButtonText}>Try Again</Text>
           </TouchableOpacity>
@@ -236,7 +236,7 @@ export default function NearbyScreen({ navigation }: Props) {
             style={styles.primaryButton}
             onPress={() => getUserLocation()}
             accessibilityRole="button"
-            accessibility-label="Try again"
+            accessibilityLabel="Try again"
           >
             <Text style={styles.primaryButtonText}>Try Again</Text>
           </TouchableOpacity>
@@ -254,7 +254,7 @@ export default function NearbyScreen({ navigation }: Props) {
             style={styles.primaryButton}
             onPress={() => getUserLocation(true)}
             accessibilityRole="button"
-            accessibility-label="Refresh location"
+            accessibilityLabel="Refresh location"
           >
             <Text style={styles.primaryButtonText}>Refresh Location</Text>
           </TouchableOpacity>

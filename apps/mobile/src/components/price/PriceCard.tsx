@@ -28,7 +28,11 @@ export default function PriceCard({ price, isLowest }: PriceCardProps) {
   const chain = price.branch?.chain;
 
   return (
-    <View style={[styles.card, isLowest && styles.lowestCard]}>
+    <View
+      style={[styles.card, isLowest && styles.lowestCard]}
+      accessible
+      accessibilityLabel={`${chain?.name || 'Pharmacy'} price ${formatPrice(Number(price.price) || 0)} at ${price.branch?.name || 'branch'}`}
+    >
       <View style={styles.header}>
         <View style={styles.chain}>
           <View
@@ -41,13 +45,13 @@ export default function PriceCard({ price, isLowest }: PriceCardProps) {
             </View>
           )}
         </View>
-        <Text style={styles.amount}>{formatPrice(price.price)}</Text>
+        <Text style={styles.amount}>{formatPrice(Number(price.price) || 0)}</Text>
       </View>
 
       <View style={styles.location}>
         <MapPin size={16} color={colors.muted} />
         <Text style={styles.locationText}>
-          {price.branch?.name}
+          {price.branch?.name || 'Pharmacy branch'}
           {price.branch?.address ? ` - ${price.branch.address}` : ''}
         </Text>
       </View>

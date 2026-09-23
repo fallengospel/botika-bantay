@@ -3,7 +3,8 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@botika-bantay/shared": ["../../packages/shared/src"]
+      "@botika-bantay/shared": ["../../packages/shared/src"],
+      "@botika-bantay/shared/*": ["../../packages/shared/src/*"]
     }
   }
 }

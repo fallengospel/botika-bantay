@@ -91,7 +91,7 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.actionContent}>
               <Text style={styles.actionTitle}>Verify</Text>
               <Text style={styles.actionDescription}>
-                Scan barcode to check kung FDA-registered ang gamot
+                Scan barcode to check kung naka-lista sa catalog namin ang gamot
               </Text>
             </View>
           </TouchableOpacity>
@@ -135,7 +135,7 @@ export default function HomeScreen({ navigation }: Props) {
               </View>
               <Text style={styles.featureTitle}>FDA Registry Check</Text>
               <Text style={styles.featureDescription}>
-                Checked against our FDA Philippines data
+                Checked against our catalog of FDA-registered products
               </Text>
             </View>
 
