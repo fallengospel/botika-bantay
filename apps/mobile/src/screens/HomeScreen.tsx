@@ -1,40 +1,75 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  TextInput,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TrendingDown, ShieldCheck, Pill, MapPin } from 'lucide-react';
+import { TrendingDown, ShieldCheck, Pill, MapPin, Search, ArrowRight } from 'lucide-react-native';
 import { NavigationProp } from '../types/navigation';
+import { colors, font, space, radius, MIN_TOUCH } from '../theme';
 
 interface Props {
   navigation: NavigationProp;
 }
 
 export default function HomeScreen({ navigation }: Props) {
+  const [query, setQuery] = useState('');
+
+  const startSearch = () => {
+    Keyboard.dismiss();
+    navigation.navigate('Medicines', { initialSearch: query.trim() });
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Hero Section */}
+    <View style={styles.root}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        {/* Hero */}
         <View style={styles.hero}>
           <Text style={styles.heroTitle}>BotikaBantay</Text>
           <Text style={styles.heroTagline}>Presyo na Tama, Gamot na Tunay</Text>
           <Text style={styles.heroSubtitle}>The Right Price, The Real Medicine</Text>
+
+          {/* Quick search — Lola's #4: search right on Home */}
+          <View style={styles.searchBox}>
+            <Search size={20} color={colors.muted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Hanapin ang gamot..."
+              placeholderTextColor={colors.muted}
+              value={query}
+              onChangeText={setQuery}
+              onSubmitEditing={startSearch}
+              returnKeyType="search"
+              accessibilityLabel="Search medicine from home"
+            />
+            <TouchableOpacity
+              style={styles.searchGo}
+              onPress={startSearch}
+              accessibilityRole="button"
+              accessibilityLabel="Start search"
+            >
+              <ArrowRight size={18} color={colors.white} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Quick Actions */}
         <View style={styles.actionsContainer}>
           <Text style={styles.sectionTitle}>What would you like to do?</Text>
-          
+
           <TouchableOpacity
             style={styles.actionCard}
             onPress={() => navigation.navigate('Medicines')}
+            accessibilityRole="button"
+            accessibilityLabel="Price Check — compare medicine prices"
           >
             <View style={[styles.actionIcon, styles.priceIcon]}>
-              <TrendingDown size={32} color="#12924A" />
+              <TrendingDown size={28} color={colors.brand} />
             </View>
             <View style={styles.actionContent}>
               <Text style={styles.actionTitle}>Price Check</Text>
@@ -47,9 +82,11 @@ export default function HomeScreen({ navigation }: Props) {
           <TouchableOpacity
             style={styles.actionCard}
             onPress={() => navigation.navigate('Scanner')}
+            accessibilityRole="button"
+            accessibilityLabel="Verify — scan medicine barcode"
           >
             <View style={[styles.actionIcon, styles.verifyIcon]}>
-              <ShieldCheck size={32} color="#2563eb" />
+              <ShieldCheck size={28} color={colors.brandDeep} />
             </View>
             <View style={styles.actionContent}>
               <Text style={styles.actionTitle}>Verify</Text>
@@ -62,9 +99,11 @@ export default function HomeScreen({ navigation }: Props) {
           <TouchableOpacity
             style={styles.actionCard}
             onPress={() => navigation.navigate('Nearby')}
+            accessibilityRole="button"
+            accessibilityLabel="Nearby Pharmacies"
           >
             <View style={[styles.actionIcon, styles.nearbyIcon]}>
-              <MapPin size={32} color="#ea580c" />
+              <MapPin size={28} color={colors.brandGold} />
             </View>
             <View style={styles.actionContent}>
               <Text style={styles.actionTitle}>Nearby Pharmacies</Text>
@@ -75,93 +114,126 @@ export default function HomeScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
 
-        {/* Features */}
+        {/* Features — honest claims (Lola #21) */}
         <View style={styles.featuresContainer}>
           <Text style={styles.sectionTitle}>Why BotikaBantay?</Text>
-          
+
           <View style={styles.featuresGrid}>
             <View style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: '#E7F4EC' }]}>
-                <Pill size={24} color="#12924A" />
+              <View style={[styles.featureIcon, { backgroundColor: colors.brandMint }]}>
+                <Pill size={24} color={colors.brand} />
               </View>
-              <Text style={styles.featureTitle}>100+ Medicines</Text>
+              <Text style={styles.featureTitle}>Medicine Catalog</Text>
               <Text style={styles.featureDescription}>
                 Common OTC and maintenance medications
               </Text>
             </View>
-            
+
             <View style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: '#dbeafe' }]}>
-                <ShieldCheck size={24} color="#2563eb" />
+              <View style={[styles.featureIcon, { backgroundColor: colors.brandMint }]}>
+                <ShieldCheck size={24} color={colors.brandDeep} />
               </View>
-              <Text style={styles.featureTitle}>FDA Verified</Text>
+              <Text style={styles.featureTitle}>FDA Registry Check</Text>
               <Text style={styles.featureDescription}>
-                Cross-referenced with FDA Philippines
+                Checked against our FDA Philippines data
               </Text>
             </View>
-            
-            <View style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: '#ffedd5' }]}>
-                <MapPin size={24} color="#ea580c" />
+
+            <View style={[styles.featureItem, styles.featureItemFull]}>
+              <View style={[styles.featureIcon, { backgroundColor: colors.warningBg }]}>
+                <MapPin size={24} color={colors.warning} />
               </View>
               <Text style={styles.featureTitle}>Location-Based</Text>
               <Text style={styles.featureDescription}>
-                Find pharmacies near you
+                Find pharmacies within 10 km of you
               </Text>
             </View>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: '#F5F6F2',
+    backgroundColor: colors.paper,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: space.xxl,
   },
   hero: {
-    backgroundColor: '#0F1F17',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
+    backgroundColor: colors.ink,
+    paddingTop: space.xxl,
+    paddingBottom: space.xxl,
+    paddingHorizontal: space.xl,
     alignItems: 'center',
   },
   heroTitle: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
+    fontSize: 34,
+    fontWeight: '800',
+    color: colors.white,
+    marginBottom: space.sm,
   },
   heroTagline: {
-    fontSize: 18,
-    color: '#A6D9BF',
+    fontSize: font.lg,
+    color: colors.brandMint,
     fontStyle: 'italic',
-    marginBottom: 4,
+    marginBottom: space.xs,
+    textAlign: 'center',
   },
   heroSubtitle: {
-    fontSize: 14,
+    fontSize: font.md,
     color: '#6FC49A',
+    marginBottom: space.xl,
   },
-  actionsContainer: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  actionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+  searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    width: '100%',
+    minHeight: MIN_TOUCH + 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  searchInput: {
+    flex: 1,
+    height: MIN_TOUCH + 4,
+    fontSize: font.md,
+    color: colors.ink,
+    marginLeft: space.sm,
+  },
+  searchGo: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.sm,
+    backgroundColor: colors.brand,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionsContainer: {
+    padding: space.xl,
+  },
+  sectionTitle: {
+    fontSize: font.xl,
+    fontWeight: '600',
+    color: colors.ink,
+    marginBottom: space.lg,
+  },
+  actionCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    padding: space.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: space.md,
+    minHeight: MIN_TOUCH + 32,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -171,47 +243,49 @@ const styles = StyleSheet.create({
   actionIcon: {
     width: 56,
     height: 56,
-    borderRadius: 12,
+    borderRadius: radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: space.lg,
   },
   priceIcon: {
-    backgroundColor: '#E7F4EC',
+    backgroundColor: colors.brandMint,
   },
   verifyIcon: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: colors.brandMint,
   },
   nearbyIcon: {
-    backgroundColor: '#ffedd5',
+    backgroundColor: colors.warningBg,
   },
   actionContent: {
     flex: 1,
   },
   actionTitle: {
-    fontSize: 18,
+    fontSize: font.lg,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
+    color: colors.ink,
+    marginBottom: space.xs,
   },
   actionDescription: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: font.sm,
+    color: colors.muted,
+    lineHeight: 20,
   },
   featuresContainer: {
-    padding: 20,
+    padding: space.xl,
+    paddingTop: 0,
   },
   featuresGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: space.md,
   },
   featureItem: {
     width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    padding: space.lg,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -219,24 +293,32 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  featureItemFull: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    textAlign: 'left',
+  },
   featureIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: space.md,
   },
   featureTitle: {
-    fontSize: 14,
+    fontSize: font.sm,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
+    color: colors.ink,
+    marginBottom: space.xs,
     textAlign: 'center',
   },
   featureDescription: {
-    fontSize: 12,
-    color: '#6b7280',
+    fontSize: font.xs + 1,
+    color: colors.muted,
     textAlign: 'center',
+    lineHeight: 18,
   },
 });

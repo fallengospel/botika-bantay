@@ -6,39 +6,28 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "privacy": "unlisted",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-        "backgroundColor": "#12924A"
+      "backgroundColor": "#12924A"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.botikabantay.app",
       "infoPlist": {
         "NSCameraUsageDescription": "BotikaBantay needs camera access to scan medicine barcodes for verification.",
-        "NSLocationWhenInUseUsageDescription": "BotikaBantay needs your location to find nearby pharmacies.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "BotikaBantay needs your location to find nearby pharmacies."
+        "NSLocationWhenInUseUsageDescription": "BotikaBantay needs your location to find nearby pharmacies."
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-      "backgroundColor": "#12924A"
+        "backgroundColor": "#12924A"
       },
       "package": "com.botikabantay.app",
-      "permissions": [
-        "CAMERA",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ]
+      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
-    "plugins": [
-      "expo-camera",
-      "expo-location"
-    ]
+    "plugins": ["expo-camera", "expo-location"]
   }
 }
