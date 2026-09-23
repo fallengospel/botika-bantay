@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { createSupabaseClient } from '@/lib/supabase-browser';
+import { LogoLockup } from '@/components/brand/LogoLockup';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -36,8 +37,8 @@ export default function ForgotPasswordPage() {
       <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
         <div className="w-full max-w-md">
           <div className="card-elevated p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-primary-600" />
+            <div className="w-16 h-16 rounded-full bg-brand-mint flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-brand" />
             </div>
             <h1 className="heading-3 mb-2">Na-send na ang email</h1>
             <p className="text-surface-600 mb-2">
@@ -59,11 +60,8 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-glow">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl text-surface-900">BotikaBantay</span>
+          <Link href="/" className="inline-flex items-center">
+            <LogoLockup markSize={36} textClass="text-xl" />
           </Link>
         </div>
 

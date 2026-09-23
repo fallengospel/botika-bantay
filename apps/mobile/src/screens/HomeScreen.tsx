@@ -34,7 +34,7 @@ export default function HomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('Medicines')}
           >
             <View style={[styles.actionIcon, styles.priceIcon]}>
-              <TrendingDown size={32} color="#16a34a" />
+              <TrendingDown size={32} color="#12924A" />
             </View>
             <View style={styles.actionContent}>
               <Text style={styles.actionTitle}>Presyo Check</Text>
@@ -81,8 +81,8 @@ export default function HomeScreen({ navigation }: Props) {
           
           <View style={styles.featuresGrid}>
             <View style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: '#dcfce7' }]}>
-                <Pill size={24} color="#16a34a" />
+              <View style={[styles.featureIcon, { backgroundColor: '#E7F4EC' }]}>
+                <Pill size={24} color="#12924A" />
               </View>
               <Text style={styles.featureTitle}>100+ Medicines</Text>
               <Text style={styles.featureDescription}>
@@ -119,13 +119,13 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#F5F6F2',
   },
   scrollContent: {
     paddingBottom: 20,
   },
   hero: {
-    backgroundColor: '#16a34a',
+    backgroundColor: '#0F1F17',
     paddingVertical: 40,
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -138,13 +138,13 @@ const styles = StyleSheet.create({
   },
   heroTagline: {
     fontSize: 18,
-    color: '#dcfce7',
+    color: '#A6D9BF',
     fontStyle: 'italic',
     marginBottom: 4,
   },
   heroSubtitle: {
     fontSize: 14,
-    color: '#bbf7d0',
+    color: '#6FC49A',
   },
   actionsContainer: {
     padding: 20,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   priceIcon: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: '#E7F4EC',
   },
   verifyIcon: {
     backgroundColor: '#dbeafe',

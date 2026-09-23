@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { createSupabaseClient } from '@/lib/supabase-browser';
+import { LogoLockup } from '@/components/brand/LogoLockup';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -40,11 +41,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-glow">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl text-surface-900">BotikaBantay</span>
+          <Link href="/" className="inline-flex items-center">
+            <LogoLockup markSize={36} textClass="text-xl" />
           </Link>
         </div>
 

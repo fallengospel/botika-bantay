@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Search, ShieldCheck, CheckCircle, XCircle, AlertTriangle, Flag, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, CheckCircle, XCircle, AlertTriangle, Flag, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { LogoMark } from '@/components/brand/LogoMark';
 
 interface Medicine {
   id: string;
@@ -46,20 +47,20 @@ export default function ScannerPage() {
   };
 
   return (
-    <main className="flex-1 bg-surface-50">
-      <div className="bg-white border-b border-surface-100">
+    <main className="flex-1 bg-brand-paper">
+      <div className="bg-white border-b border-brand-line">
         <div className="page-container py-6">
-          <Link href="/" className="flex items-center gap-2 text-surface-600 hover:text-surface-900 mb-4">
+          <Link href="/" className="flex items-center gap-2 text-brand-muted hover:text-brand-ink mb-4">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Back</span>
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-medical-500 to-blue-500 text-white shadow-glow-medical">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="p-2 rounded-xl bg-brand-ink text-white shadow-impeccable-md">
+              <LogoMark size={28} tone="reversed" title="" />
             </div>
             <h1 className="heading-2">Tunay Check</h1>
           </div>
-          <p className="text-surface-600">Verify if medicine is FDA-registered and authentic</p>
+          <p className="text-brand-muted">Verify if medicine is FDA-registered and authentic</p>
         </div>
       </div>
 

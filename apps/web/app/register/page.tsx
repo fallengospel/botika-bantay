@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { createSupabaseClient } from '@/lib/supabase-browser';
+import { LogoLockup } from '@/components/brand/LogoLockup';
+import { LogoMark } from '@/components/brand/LogoMark';
 
 export default function RegisterPage() {
   const [displayName, setDisplayName] = useState('');
@@ -54,8 +56,8 @@ export default function RegisterPage() {
       <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
         <div className="w-full max-w-md">
           <div className="card-elevated p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-8 h-8 text-primary-600" />
+            <div className="w-16 h-16 rounded-full bg-brand-mint flex items-center justify-center mx-auto mb-4">
+              <LogoMark size={36} />
             </div>
             <h1 className="heading-3 mb-2">Salamat sa pagpaparehistro!</h1>
             <p className="text-surface-600 mb-2">
@@ -76,14 +78,11 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-glow">
-              <ShieldCheck className="w-5 h-5 text-white" />
+            <div className="text-center mb-8">
+              <Link href="/" className="inline-flex items-center">
+                <LogoLockup markSize={36} textClass="text-xl" />
+              </Link>
             </div>
-            <span className="font-bold text-xl text-surface-900">BotikaBantay</span>
-          </Link>
-        </div>
 
         <div className="card-elevated p-8">
           <div className="text-center mb-6">

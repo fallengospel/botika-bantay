@@ -1,22 +1,24 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ 
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-jakarta',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#16a34a',
+  themeColor: '#12924A',
 };
 
 export const metadata: Metadata = {
   title: 'BotikaBantay - Presyo na Tama, Gamot na Tunay',
-  description: 'Compare medicine prices and verify authenticity across Philippine pharmacies. Presyo na Tama, Gamot na Tunay.',
+  description:
+    'I-compare ang presyo ng gamot sa Mercury Drug, Watsons, Rose Pharmacy at iba pa. I-verify sa FDA Philippines registry — mula Aparri hanggang Jolo.',
   keywords: ['medicine', 'price comparison', 'Philippines', 'pharmacy', 'FDA', 'verification', 'botika', 'gamot', 'presyo'],
   manifest: '/manifest.json',
   appleWebApp: {
@@ -32,18 +34,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fil" className={inter.variable}>
+    <html lang="fil" className={jakarta.variable}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${jakarta.className} antialiased`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-primary-600 focus:font-medium"
         >
           Skip to content
         </a>
-        <div className="min-h-screen flex flex-col bg-surface-50" id="main-content">
+        <div className="min-h-screen flex flex-col bg-brand-paper" id="main-content">
           {children}
         </div>
         <script

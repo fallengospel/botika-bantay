@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, ArrowLeft, Flag, AlertTriangle, CheckCircle2, XCircle, Clock, Eye, Filter, Loader2 } from 'lucide-react';
+import { ArrowLeft, Flag, AlertTriangle, CheckCircle2, XCircle, Clock, Eye, Filter, Loader2 } from 'lucide-react';
 import { createSupabaseClient } from '@/lib/supabase-browser';
+import { LogoMark } from '@/components/brand/LogoMark';
 
 type Tab = 'submissions' | 'reports' | 'outliers';
 
@@ -145,11 +146,11 @@ export default function AdminPage() {
 
   if (unauthorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-50">
+      <div className="min-h-screen flex items-center justify-center bg-brand-paper">
         <div className="card-elevated max-w-md w-full mx-4 p-8 text-center">
-          <ShieldCheck className="w-12 h-12 text-surface-300 mx-auto mb-4" />
+          <LogoMark size={48} className="mx-auto mb-4" />
           <h1 className="heading-3 mb-2">Kailangan ng Login</h1>
-          <p className="text-surface-600 mb-6">Kailangan mong mag-login bilang admin para ma-access ang page na ito.</p>
+          <p className="text-brand-muted mb-6">Kailangan mong mag-login bilang admin para ma-access ang page na ito.</p>
           <Link href="/login" className="btn-primary inline-flex">
             Mag-login
           </Link>
@@ -159,15 +160,15 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50">
-      <header className="bg-white border-b border-surface-100">
+    <div className="min-h-screen bg-brand-paper">
+      <header className="bg-white border-b border-brand-line">
         <div className="page-container flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2 text-surface-600 hover:text-surface-900">
+          <Link href="/" className="flex items-center gap-2 text-brand-muted hover:text-brand-ink">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Back</span>
           </Link>
-          <h1 className="text-sm font-semibold text-surface-900 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary-600" />
+          <h1 className="text-sm font-semibold text-brand-ink flex items-center gap-2">
+            <LogoMark size={18} title="" />
             Admin Panel
           </h1>
           <div className="w-16" />
