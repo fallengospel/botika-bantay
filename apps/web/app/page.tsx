@@ -215,7 +215,7 @@ export default function Home() {
             <h2 className="heading-2 mb-4 text-brand-ink">Two problems, one solution</h2>
             <p className="text-lg text-brand-muted">
               Ginawa para sa Pilipino, ng Pilipino. You don&apos;t need two apps anymore —
-              price and authenticity, nandito na lahat.
+              price and catalog checks, nandito na lahat.
             </p>
           </div>
 
@@ -252,23 +252,23 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Authenticity Check */}
+            {/* Catalog Check */}
             <div className="card-elevated group hover:shadow-impeccable-xl transition-all duration-300">
               <div className="flex items-start gap-4 mb-6">
                 <div className="p-3 rounded-xl bg-brand-ink text-white shadow-impeccable-md">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="heading-3">Authenticity Check</h3>
-                  <p className="text-brand-muted mt-1">I-verify kung FDA-registered ang gamot bago mo bilhin.</p>
+                  <h3 className="heading-3">Catalog Check</h3>
+                  <p className="text-brand-muted mt-1">I-check kung naka-lista sa catalog namin ang gamot bago mo bilhin.</p>
                 </div>
               </div>
 
               <ul className="space-y-3 mb-6">
                 {[
                   'Scan the barcode or QR code on the pack',
-                  'Cross-check sa FDA Philippines registry',
-                  'Know right away if the product is authentic',
+                  'Cross-check against our FDA-registered catalog',
+                  'See if the code is listed before you buy',
                   'Report anything that looks suspicious',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-surface-600">
@@ -475,7 +475,7 @@ export default function Home() {
                 Start saving today
               </h2>
               <p className="text-lg text-white/85 max-w-2xl mx-auto mb-8">
-                Hanapin ang pinakamurang presyo for your medicine and verify authenticity in one place.
+                Hanapin ang pinakamurang presyo for your medicine and check codes in one place.
                 Free — no account needed.
               </p>
 

@@ -1,7 +1,7 @@
 {
   "name": "BotikaBantay",
   "short_name": "BotikaBantay",
-  "description": "Presyo na Tama, Gamot na Tunay - Compare medicine prices and verify authenticity",
+  "description": "Presyo na Tama, Gamot na Tunay - Compare medicine prices and check codes against our catalog",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5F6F2",

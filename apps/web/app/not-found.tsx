@@ -55,7 +55,7 @@ export default function NotFound() {
             </div>
             <div>
               <p className="font-medium text-brand-ink">Verify</p>
-              <p className="text-sm text-brand-muted">I-verify kung authentic ang gamot</p>
+              <p className="text-sm text-brand-muted">I-check kung naka-lista ang gamot</p>
             </div>
           </Link>
         </div>
