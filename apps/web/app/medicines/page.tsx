@@ -64,8 +64,8 @@ function MedicinesContent() {
   return (
     <>
       <Header
-        title="Presyo Check"
-        subtitle="Compare medicine prices across pharmacies"
+        title="Price Check"
+        subtitle="I-compare ang presyo ng gamot sa mga pharmacy"
         backHref="/"
         backLabel="Back to Home"
       />
@@ -104,7 +104,7 @@ function MedicinesContent() {
             </p>
             <p className="text-sm text-surface-500 mb-4">
               {searchQuery ? (
-                <>Subukang gumamit ng ibang pangalan o generic name.</>
+                <>Subukang gumamit ng ibang pangalan or generic name.</>
               ) : (
                 <>Mag-search sa itaas para makahanap ng gamot.</>
               )}
@@ -114,7 +114,7 @@ function MedicinesContent() {
                 onClick={() => { setSearchQuery(''); fetchMedicines(); }}
                 className="text-primary-600 hover:text-primary-700 text-sm font-medium"
               >
-                Burahin ang Search
+                Clear Search
               </button>
             )}
           </div>

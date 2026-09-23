@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
       if (resetError) throw resetError;
       setSent(true);
     } catch (err: any) {
-      setError(err.message || 'Hindi naisend ang email. Subukan muli.');
+      setError(err.message || 'Could not send email. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -40,15 +40,15 @@ export default function ForgotPasswordPage() {
             <div className="w-16 h-16 rounded-full bg-brand-mint flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-brand" />
             </div>
-            <h1 className="heading-3 mb-2">Na-send na ang email</h1>
+            <h1 className="heading-3 mb-2">Email sent</h1>
             <p className="text-surface-600 mb-2">
               Nagpadala kami ng password reset link sa <strong>{email}</strong>.
             </p>
             <p className="text-sm text-surface-500 mb-6">
-              I-check ang iyong inbox at i-click ang link para mag-set ng bagong password. Kung hindi mo nakita, i-check ang spam folder.
+              I-check ang inbox mo at i-click ang link para mag-set ng bagong password. Kung wala sa inbox, baka nasa spam folder.
             </p>
             <Link href="/login" className="btn-primary inline-flex">
-              Bumalik sa Login
+              Back to Sign in
             </Link>
           </div>
         </div>
@@ -67,8 +67,8 @@ export default function ForgotPasswordPage() {
 
         <div className="card-elevated p-8">
           <div className="text-center mb-6">
-            <h1 className="heading-3 mb-2">Nakalimutan ang password?</h1>
-            <p className="text-sm text-surface-500">I-type ang iyong email at padadalhan ka namin ng reset link.</p>
+            <h1 className="heading-3 mb-2">Forgot password?</h1>
+            <p className="text-sm text-surface-500">I-type ang email mo and we&apos;ll send you a reset link.</p>
           </div>
 
           {error && (
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                   Sending...
                 </span>
               ) : (
-                'I-send ang Reset Link'
+                'Send Reset Link'
               )}
             </button>
           </form>
@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-6 text-center">
             <Link href="/login" className="inline-flex items-center gap-1 text-sm text-surface-500 hover:text-surface-700">
               <ArrowLeft className="w-4 h-4" />
-              Bumalik sa Login
+              Back to Sign in
             </Link>
           </div>
         </div>

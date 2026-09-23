@@ -41,7 +41,7 @@ function ReportContent() {
         const data = await res.json();
         const rawError = data.error || 'Failed to submit report';
         if (rawError.includes('row-level security') || rawError.includes('policy')) {
-          throw new Error('Hindi pa naka-set up ang security settings. Mangyaring kontakin ang support.');
+          throw new Error('Security settings are not set up yet. Please contact support.');
         }
         throw new Error(rawError);
       }
@@ -72,7 +72,7 @@ function ReportContent() {
             </div>
             <h1 className="heading-3 mb-2">Report Submitted</h1>
             <p className="text-surface-600 mb-6">
-              Salamat sa iyong report. I-review namin ito at i-forward sa FDA kung kinakailangan.
+              Salamat sa report mo. I-review namin ito and i-forward sa FDA kung kinakailangan.
             </p>
             <Link href="/" className="btn-primary">
               Back to Home
@@ -91,7 +91,7 @@ function ReportContent() {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Back</span>
           </Link>
-          <h1 className="text-sm font-semibold text-surface-900">Magreklamo</h1>
+          <h1 className="text-sm font-semibold text-surface-900">Report Product</h1>
           <div className="w-16" />
         </div>
       </header>
@@ -100,11 +100,11 @@ function ReportContent() {
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-sm font-medium mb-4">
             <AlertTriangle className="w-3.5 h-3.5" />
-            I-Report ang Kahina-hinalang Gamot
+            Report a Suspicious Medicine
           </div>
           <h1 className="heading-3 mb-2">May nakita kang peke o kahina-hinalang gamot?</h1>
           <p className="text-surface-600">
-            I-submit ang mga detalye para sa aming team. I-forward namin ito sa FDA Philippines kung kinakailangan.
+            I-submit ang details para sa aming team. I-forward namin ito sa FDA Philippines kung kinakailangan.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ function ReportContent() {
           </div>
 
           <div>
-            <label className="input-label">Pangalan ng Gamot (optional)</label>
+            <label className="input-label">Medicine Name (optional)</label>
             <input
               type="text"
               value={medicineName}
@@ -140,7 +140,7 @@ function ReportContent() {
           </div>
 
           <div>
-            <label className="input-label">Ano ang problema? *</label>
+            <label className="input-label">What&apos;s the problem? *</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -155,9 +155,9 @@ function ReportContent() {
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <div className="text-sm text-surface-600">
-                <p className="font-medium text-surface-700 mb-1">Paalala:</p>
+                <p className="font-medium text-surface-700 mb-1">Reminder:</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>Hindi ito kapalit ng pagpunta sa doctor.</li>
+                  <li>This is not a substitute for seeing a doctor.</li>
                   <li>Kung may emergency, tumawag sa 911 o pinakamalapit na hospital.</li>
                   <li>Ang report ay confidential at i-review ng aming team.</li>
                 </ul>
@@ -169,12 +169,12 @@ function ReportContent() {
             {submitting ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Sinusubmit...
+                Submitting...
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Send className="w-4 h-4" />
-                I-submit ang Report
+                Submit Report
               </span>
             )}
           </button>

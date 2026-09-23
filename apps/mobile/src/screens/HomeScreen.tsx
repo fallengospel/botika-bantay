@@ -37,9 +37,9 @@ export default function HomeScreen({ navigation }: Props) {
               <TrendingDown size={32} color="#12924A" />
             </View>
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>Presyo Check</Text>
+              <Text style={styles.actionTitle}>Price Check</Text>
               <Text style={styles.actionDescription}>
-                Compare medicine prices across major pharmacy chains
+                I-compare ang presyo ng gamot across major pharmacy chains
               </Text>
             </View>
           </TouchableOpacity>
@@ -52,9 +52,9 @@ export default function HomeScreen({ navigation }: Props) {
               <ShieldCheck size={32} color="#2563eb" />
             </View>
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>Tunay Check</Text>
+              <Text style={styles.actionTitle}>Verify</Text>
               <Text style={styles.actionDescription}>
-                Scan barcode to verify if medicine is FDA-registered
+                Scan barcode to check kung FDA-registered ang gamot
               </Text>
             </View>
           </TouchableOpacity>

@@ -59,15 +59,15 @@ export default function RegisterPage() {
             <div className="w-16 h-16 rounded-full bg-brand-mint flex items-center justify-center mx-auto mb-4">
               <LogoMark size={36} />
             </div>
-            <h1 className="heading-3 mb-2">Salamat sa pagpaparehistro!</h1>
+            <h1 className="heading-3 mb-2">You&apos;re registered!</h1>
             <p className="text-surface-600 mb-2">
-              Nagpadala kami ng email sa <strong>{email}</strong> para sa verification.
+              We sent a verification email to <strong>{email}</strong>.
             </p>
             <p className="text-sm text-surface-500 mb-6">
-              I-check ang iyong inbox at i-click ang link para ma-activate ang iyong account. Kung hindi mo nakita, i-check ang spam folder.
+              Check your inbox and click the link to activate your account. If you don&apos;t see it, check spam.
             </p>
             <Link href="/login" className="btn-primary inline-flex">
-              Mag-login na
+              Continue to Sign in
             </Link>
           </div>
         </div>

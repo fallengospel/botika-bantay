@@ -171,7 +171,7 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
                 rel="noopener noreferrer"
                 className="text-sm text-primary-600 hover:text-primary-700 font-medium inline-flex items-center gap-1"
               >
-                I-verify sa FDA Philippines ↗
+                Verify on FDA Philippines ↗
               </a>
             </div>
           )}

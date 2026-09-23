@@ -137,9 +137,9 @@ export default function AdminPage() {
   };
 
   const tabs = [
-    { id: 'submissions' as Tab, label: 'Mga Presyo', icon: Clock },
-    { id: 'reports' as Tab, label: 'Mga Reklamo', icon: Flag },
-    { id: 'outliers' as Tab, label: 'Kakaibang Presyo', icon: AlertTriangle },
+    { id: 'submissions' as Tab, label: 'Prices', icon: Clock },
+    { id: 'reports' as Tab, label: 'Reports', icon: Flag },
+    { id: 'outliers' as Tab, label: 'Outliers', icon: AlertTriangle },
   ];
 
   const filters = ['all', 'pending', 'approved', 'rejected'] as const;
@@ -149,10 +149,10 @@ export default function AdminPage() {
       <div className="min-h-screen flex items-center justify-center bg-brand-paper">
         <div className="card-elevated max-w-md w-full mx-4 p-8 text-center">
           <LogoMark size={48} className="mx-auto mb-4" />
-          <h1 className="heading-3 mb-2">Kailangan ng Login</h1>
-          <p className="text-brand-muted mb-6">Kailangan mong mag-login bilang admin para ma-access ang page na ito.</p>
+          <h1 className="heading-3 mb-2">Login required</h1>
+          <p className="text-brand-muted mb-6">You need to sign in as an admin to access this page.</p>
           <Link href="/login" className="btn-primary inline-flex">
-            Mag-login
+            Sign in
           </Link>
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function AdminPage() {
             {(activeTab === 'submissions' || activeTab === 'outliers') && submissions.length === 0 && (
               <div className="text-center py-20 text-surface-500">
                 <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-surface-300" />
-                <p>Walang submission na kailangan i-review.</p>
+                <p>No submissions need review.</p>
               </div>
             )}
 
@@ -255,14 +255,14 @@ export default function AdminPage() {
                     className="btn-sm px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 text-sm font-medium transition-colors"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
-                     Aprubahan
+                     Approve
                    </button>
                    <button
                      onClick={() => moderateSubmission(sub.id, 'rejected')}
                      className="btn-sm px-3 py-1.5 rounded-lg bg-danger-light text-danger-dark hover:bg-red-100 text-sm font-medium transition-colors"
                    >
                      <XCircle className="w-3.5 h-3.5 inline mr-1" />
-                     I-reject
+                     Reject
                   </button>
                 </div>
               </div>
@@ -272,7 +272,7 @@ export default function AdminPage() {
             {activeTab === 'reports' && reports.length === 0 && (
               <div className="text-center py-20 text-surface-500">
                 <Flag className="w-12 h-12 mx-auto mb-3 text-surface-300" />
-                <p>Walang reklamo na kailangan i-review.</p>
+                <p>No reports need review.</p>
               </div>
             )}
 
@@ -305,13 +305,13 @@ export default function AdminPage() {
                       className="px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 text-sm font-medium transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5 inline mr-1" />
-                       I-review
+                       Review
                      </button>
                      <button
                        onClick={() => moderateReport(report.id, 'forwarded_to_fda')}
                        className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-colors"
                      >
-                       I-forward sa FDA
+                       Forward to FDA
                     </button>
                   </div>
                 </div>

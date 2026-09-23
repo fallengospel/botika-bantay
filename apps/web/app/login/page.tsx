@@ -48,8 +48,8 @@ export default function LoginPage() {
 
         <div className="card-elevated p-8">
           <div className="text-center mb-6">
-            <h1 className="heading-3 mb-2">Maligayang pagbabalik</h1>
-            <p className="text-sm text-surface-500">Mag-login para magpatuloy</p>
+            <h1 className="heading-3 mb-2">Welcome back</h1>
+            <p className="text-sm text-surface-500">Sign in to continue</p>
           </div>
 
           {error && (
@@ -115,7 +115,7 @@ export default function LoginPage() {
           <div className="mt-4 text-center">
             <p className="text-sm text-surface-500">
               <Link href="/forgot-password" className="text-primary-600 font-medium hover:text-primary-700">
-                Nakalimutan ang password?
+                Forgot password?
               </Link>
             </p>
           </div>

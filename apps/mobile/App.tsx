@@ -37,7 +37,7 @@ export default function App() {
           <Stack.Screen
             name="Medicines"
             component={MedicinesScreen}
-            options={{ title: 'Presyo Check' }}
+            options={{ title: 'Price Check' }}
           />
           <Stack.Screen
             name="MedicineDetail"
@@ -47,7 +47,7 @@ export default function App() {
           <Stack.Screen
             name="Scanner"
             component={ScannerScreen}
-            options={{ title: 'Tunay Check' }}
+            options={{ title: 'Verify' }}
           />
           <Stack.Screen
             name="Nearby"
