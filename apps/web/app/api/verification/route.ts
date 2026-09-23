@@ -51,6 +51,10 @@ export async function POST(request: Request) {
   }
 
   const code = scannedCode.trim();
+
+  // Escape PostgREST `.or()` metacharacters (same as mobile)
+  const safe = code.replace(/[,()%*]/g, ' ').replace(/\s+/g, ' ').slice(0, 64);
+
   let medicine = null;
 
   // 1. Try exact match by barcode
@@ -78,11 +82,13 @@ export async function POST(request: Request) {
   }
 
   // 3. Try ilike search across brand_name, generic_name, barcode, fda_registration_number
-  if (!medicine) {
+  if (!medicine && safe) {
     const { data: results } = await supabase
       .from('medicines')
       .select('*')
-      .or(`brand_name.ilike.%${code}%,generic_name.ilike.%${code}%,barcode.ilike.%${code}%,fda_registration_number.ilike.%${code}%`)
+      .or(
+        `brand_name.ilike.%${safe}%,generic_name.ilike.%${safe}%,barcode.ilike.%${safe}%,fda_registration_number.ilike.%${safe}%`
+      )
       .limit(1);
 
     if (results && results.length > 0) {
@@ -92,7 +98,7 @@ export async function POST(request: Request) {
 
   // 4. Try partial word match (e.g. "CDRR" matches "Ceterizine" type logic — search each word)
   if (!medicine) {
-    const words = code.split(/[\s\-_/]+/).filter(w => w.length >= 3);
+    const words = safe.split(/[\s\-_/]+/).filter((w) => w.length >= 3);
     if (words.length > 0) {
       const orClause = words
         .map(w => `brand_name.ilike.%${w}%,generic_name.ilike.%${w}%`)
@@ -111,7 +117,7 @@ export async function POST(request: Request) {
         await logVerification(supabase, code, null, 'ambiguous');
         return NextResponse.json({
           status: 'ambiguous',
-          message: `Found ${results.length} possible matches. Please be more specific.`,
+          message: `Found ${results.length} possible matches in our catalog. Please scan again or search by brand/generic name.`,
           medicine: null,
           suggestions: results.map((m: any) => ({
             id: m.id,
@@ -129,14 +135,14 @@ export async function POST(request: Request) {
   if (!medicine) {
     return NextResponse.json({
       status: 'not_found',
-      message: `No medicine found for "${code}". This could mean the product is not in our database yet, or the code is incorrect.`,
+      message: `Not found in the BotikaBantay catalog for "${code}". The product may be new, the code may be wrong, or it is not listed yet. This is not a live FDA registry check.`,
       medicine: null,
     });
   }
 
   return NextResponse.json({
     status: 'found',
-    message: `Product verified: ${medicine.brand_name} (${medicine.generic_name}) — FDA Registration ${medicine.fda_registration_number}`,
+    message: `Found in catalog: ${medicine.brand_name} (${medicine.generic_name}) — FDA Registration ${medicine.fda_registration_number}. Checked against BotikaBantay's database, not a live FDA API.`,
     medicine,
   });
 }

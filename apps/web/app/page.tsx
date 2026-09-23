@@ -133,7 +133,7 @@ export default function Home() {
             {/* Subheadline — Taglish content */}
             <p className="text-lg sm:text-xl text-brand-muted max-w-2xl mx-auto mb-10 animate-in stagger-2">
               Para sa bawat Pilipinong pamilya: compare prices across Mercury Drug, Watsons, Rose Pharmacy and more —
-              then verify authenticity against the FDA Philippines registry, from Aparri to Jolo.
+              then check codes against our catalog of FDA-registered products, from Aparri to Jolo.
             </p>
 
             {/* Search Bar */}
@@ -318,7 +318,7 @@ export default function Home() {
               {
                 step: '03',
                 title: 'Verify',
-                description: 'Scan the barcode to check if it’s FDA-registered and authentic.',
+                description: 'Scan the barcode to check if it’s listed in our FDA-registered catalog.',
                 icon: ScanLine,
               },
             ].map((item, i) => (
@@ -373,7 +373,7 @@ export default function Home() {
                 <LogoLockup tone="reversed" markSize={44} textClass="text-3xl" />
                 <p className="mt-8 text-white/75 leading-relaxed max-w-md text-lg">
                   Compare prices across Mercury Drug, Watsons, Rose Pharmacy and more.
-                  Check any medicine against the FDA Philippines registry, from Aparri to Jolo.
+                  Check barcodes and FDA numbers against our catalog of FDA-registered products, from Aparri to Jolo.
                 </p>
                 <p className="mt-4 text-white/60 text-sm max-w-md">
                   Isang sign of trust mula search hanggang checkout — para sa bawat
