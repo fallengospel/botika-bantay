@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MapPin, Navigation, AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
 import Header from '@/components/layout/Header';
 
 interface PharmacyBranch {
@@ -56,7 +57,7 @@ export default function NearbyPage() {
         fetchNearbyBranches(position.coords.latitude, position.coords.longitude);
       },
       (error) => {
-        setLocationError('Unable to get your location. Please enable location access.');
+        setLocationError('Hindi makuha ang iyong lokasyon. Mangyaring i-enable ang location access.');
         setLoading(false);
       }
     );
@@ -70,7 +71,7 @@ export default function NearbyPage() {
       setBranches(data);
     } catch (error) {
       console.error('Failed to fetch branches:', error);
-      setLocationError('Failed to load pharmacy data. Please try again.');
+      setLocationError('Hindi na-load ang data ng pharmacy. Subukan muli.');
     } finally {
       setLoading(false);
     }
@@ -84,17 +85,17 @@ export default function NearbyPage() {
   return (
     <main className="flex-1 bg-surface-50">
       <Header 
-        title="Nearby Pharmacies" 
-        subtitle="Find pharmacies near your location"
+        title="Malapit sa Iyo" 
+        subtitle="Hanapin ang pharmacy malapit sa lokasyon mo"
         backHref="/"
-        backLabel="Back to Home"
+        backLabel="Bumalik sa Home"
       />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-surface-600">Finding nearby pharmacies...</p>
+            <p className="mt-4 text-surface-600">Hinahanap ang malapit na pharmacy...</p>
           </div>
         ) : locationError ? (
           <div className="text-center py-12">
@@ -104,13 +105,22 @@ export default function NearbyPage() {
               onClick={getUserLocation}
               className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700"
             >
-              Try Again
+              Subukan Muli
             </button>
           </div>
         ) : branches.length === 0 ? (
           <div className="text-center py-12">
             <MapPin className="w-16 h-16 text-surface-300 mx-auto mb-4" />
-            <p className="text-surface-600">No pharmacies found nearby</p>
+            <p className="text-surface-600 font-medium mb-2">Walang nakitang pharmacy sa malapit</p>
+            <p className="text-sm text-surface-500 mb-6">Subukang ilapat ang iyong lokasyon o maghanap sa ibang lugar.</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={getUserLocation} className="btn-primary text-sm">
+                I-refresh ang Lokasyon
+              </button>
+              <Link href="/medicines" className="btn-secondary text-sm">
+                Maghanap ng Gamot
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">

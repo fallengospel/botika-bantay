@@ -166,7 +166,7 @@ export default function SubmitPricePage() {
             </p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => { setSubmitted(false); setStep(1); setPrice(''); setSelectedMedicine(null); setSelectedBranch(null); setOutlierWarning(null); }} className="btn-primary">
-                Submit Another
+                Mag-submit pa
               </button>
               <Link href="/medicines" className="btn-secondary">
                 View Medicines
@@ -323,9 +323,9 @@ export default function SubmitPricePage() {
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-amber-800">Unusual price detected</p>
+                      <p className="text-sm font-medium text-amber-800">Kakaibang presyo ang iyong inilagay</p>
                       <p className="text-sm text-amber-700 mt-1">
-                        Median price is ₱{outlierWarning.median.toFixed(2)}. Your submission is {outlierWarning.deviation.toFixed(0)}% off.
+                        Ang median na presyo ay ₱{outlierWarning.median.toFixed(2)}. Ang iyong submission ay {outlierWarning.deviation.toFixed(0)}% mababa o mataas.
                       </p>
                     </div>
                   </div>

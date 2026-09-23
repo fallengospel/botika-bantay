@@ -11,6 +11,7 @@ import {
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -35,19 +36,26 @@ export default function Home() {
               <span className="font-bold text-lg text-surface-900">BotikaBantay</span>
             </Link>
             
-            <div className="hidden sm:flex items-center gap-8">
-              <Link href="/medicines" className="text-sm font-medium text-surface-600 hover:text-primary-600 transition-colors">
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center gap-1">
+              <Link href="/medicines" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
                 Presyo Check
               </Link>
-              <Link href="/scanner" className="text-sm font-medium text-surface-600 hover:text-primary-600 transition-colors">
+              <Link href="/submit" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                Magsumite
+              </Link>
+              <Link href="/scanner" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
                 Tunay Check
               </Link>
-              <Link href="/nearby" className="text-sm font-medium text-surface-600 hover:text-primary-600 transition-colors">
-                Nearby
+              <Link href="/nearby" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                Malapit
+              </Link>
+              <Link href="/report" className="px-3 py-2 text-sm font-medium text-surface-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                Magreklamo
               </Link>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
               <Link href="/login" className="btn-ghost text-sm">
                 Sign in
               </Link>
@@ -55,8 +63,53 @@ export default function Home() {
                 Get Started
               </Link>
             </div>
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              className="md:hidden p-2 rounded-lg text-surface-600 hover:bg-surface-100 transition-colors"
+              aria-label={mobileNavOpen ? 'Isara ang menu' : 'Buksan ang menu'}
+              aria-expanded={mobileNavOpen}
+            >
+              {mobileNavOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile nav dropdown */}
+        {mobileNavOpen && (
+          <div className="md:hidden bg-white border-t border-surface-100 shadow-lg">
+            <div className="px-4 py-3 space-y-1">
+              <Link href="/medicines" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-all">
+                Presyo Check
+              </Link>
+              <Link href="/submit" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-all">
+                Magsumite ng Presyo
+              </Link>
+              <Link href="/scanner" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-all">
+                Tunay Check (Scanner)
+              </Link>
+              <Link href="/nearby" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-all">
+                Malapit sa Iyo
+              </Link>
+              <Link href="/report" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-700 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-all">
+                Magreklamo
+              </Link>
+              <div className="border-t border-surface-100 mt-2 pt-2 space-y-1">
+                <Link href="/login" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-surface-600 hover:bg-surface-50 rounded-lg transition-all">
+                  Sign in
+                </Link>
+                <Link href="/register" onClick={() => setMobileNavOpen(false)} className="block px-3 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg text-center shadow-md">
+                  Magparehistro
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}

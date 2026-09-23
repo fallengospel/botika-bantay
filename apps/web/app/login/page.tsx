@@ -50,8 +50,8 @@ export default function LoginPage() {
 
         <div className="card-elevated p-8">
           <div className="text-center mb-6">
-            <h1 className="heading-3 mb-2">Welcome back</h1>
-            <p className="text-sm text-surface-500">Sign in to your account to continue</p>
+            <h1 className="heading-3 mb-2">Maligayang pagbabalik</h1>
+            <p className="text-sm text-surface-500">Mag-login para magpatuloy</p>
           </div>
 
           {error && (
@@ -114,7 +114,15 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
+            <p className="text-sm text-surface-500">
+              <Link href="/forgot-password" className="text-primary-600 font-medium hover:text-primary-700">
+                Nakalimutan ang password?
+              </Link>
+            </p>
+          </div>
+
+          <div className="mt-4 text-center">
             <p className="text-sm text-surface-500">
               No account yet?{' '}
               <Link href="/register" className="text-primary-600 font-medium hover:text-primary-700">

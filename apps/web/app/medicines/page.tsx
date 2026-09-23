@@ -99,7 +99,24 @@ function MedicinesContent() {
         ) : medicines.length === 0 ? (
           <div className="text-center py-12">
             <Pill className="w-16 h-16 text-surface-300 mx-auto mb-4" />
-            <p className="text-surface-600">No medicines found</p>
+            <p className="text-surface-600 font-medium mb-2">
+              {searchQuery ? `Walang nakitang gamot para sa "${searchQuery}"` : 'Walang nakitang gamot'}
+            </p>
+            <p className="text-sm text-surface-500 mb-4">
+              {searchQuery ? (
+                <>Subukang gumamit ng ibang pangalan o generic name.</>
+              ) : (
+                <>Mag-search sa itaas para makahanap ng gamot.</>
+              )}
+            </p>
+            {searchQuery && (
+              <button
+                onClick={() => { setSearchQuery(''); fetchMedicines(); }}
+                className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+              >
+                Burahin ang Search
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">

@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,13 +41,37 @@ export default function RegisterPage() {
         } as any);
       }
 
-      router.push('/medicines');
+      setRegistered(true);
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (registered) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">
+        <div className="w-full max-w-md">
+          <div className="card-elevated p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="w-8 h-8 text-primary-600" />
+            </div>
+            <h1 className="heading-3 mb-2">Salamat sa pagpaparehistro!</h1>
+            <p className="text-surface-600 mb-2">
+              Nagpadala kami ng email sa <strong>{email}</strong> para sa verification.
+            </p>
+            <p className="text-sm text-surface-500 mb-6">
+              I-check ang iyong inbox at i-click ang link para ma-activate ang iyong account. Kung hindi mo nakita, i-check ang spam folder.
+            </p>
+            <Link href="/login" className="btn-primary inline-flex">
+              Mag-login na
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface-50 px-4">

@@ -39,7 +39,11 @@ function ReportContent() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to submit report');
+        const rawError = data.error || 'Failed to submit report';
+        if (rawError.includes('row-level security') || rawError.includes('policy')) {
+          throw new Error('Hindi pa naka-set up ang security settings. Mangyaring kontakin ang support.');
+        }
+        throw new Error(rawError);
       }
 
       setSubmitted(true);
@@ -87,7 +91,7 @@ function ReportContent() {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Back</span>
           </Link>
-          <h1 className="text-sm font-semibold text-surface-900">Report Suspicious Product</h1>
+          <h1 className="text-sm font-semibold text-surface-900">Magreklamo</h1>
           <div className="w-16" />
         </div>
       </header>
@@ -165,12 +169,12 @@ function ReportContent() {
             {submitting ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Submitting report...
+                Sinusubmit...
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Send className="w-4 h-4" />
-                Submit Report
+                I-submit ang Report
               </span>
             )}
           </button>

@@ -163,6 +163,18 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
               <p className="font-medium">{medicine.fda_registration_number}</p>
             </div>
           </div>
+          {medicine.fda_registration_number && (
+            <div className="mt-4 pt-4 border-t border-surface-100">
+              <a
+                href={`https://www.fda.gov.ph/verification?search=${encodeURIComponent(medicine.fda_registration_number)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium inline-flex items-center gap-1"
+              >
+                I-verify sa FDA Philippines ↗
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Price Summary */}

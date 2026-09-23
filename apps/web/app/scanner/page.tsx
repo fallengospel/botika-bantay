@@ -64,22 +64,33 @@ export default function ScannerPage() {
       </div>
 
       <div className="page-container max-w-3xl py-8">
+        {/* How to Verify - Instructions first */}
+        <div className="card bg-medical-50 border-medical-200 mb-6">
+          <h3 className="font-medium text-medical-800 mb-2">Paano mag-verify</h3>
+          <ul className="text-sm text-medical-700 space-y-1.5">
+            <li>• Hanapin ang barcode sa packaging ng gamot</li>
+            <li>• I-type ang mga numero sa ilalim ng barcode</li>
+            <li>• O i-enter ang FDA Registration Number (hal. FR-XXXX-XXXX)</li>
+            <li>• Chine-check ng sistema laban sa FDA Philippines registry</li>
+          </ul>
+        </div>
+
         {/* Manual Lookup */}
         <div className="card-elevated mb-6">
-          <h2 className="font-semibold text-surface-900 mb-2">Manual Verification</h2>
+          <h2 className="font-semibold text-surface-900 mb-2">Manu-manong Pag-verify</h2>
           <p className="text-sm text-surface-500 mb-4">
-            Enter the barcode number, QR code data, or FDA registration number to verify a product.
+            I-type ang barcode number, QR code data, o FDA registration number para ma-verify ang produkto.
           </p>
           <form onSubmit={handleVerify} className="flex gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
               <input
                 type="text"
-                placeholder="Enter barcode, QR code, or FDA registration #"
+                placeholder="I-type ang barcode, QR code, o FDA registration #"
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 className="input-field pl-10"
-                aria-label="Barcode, QR code, or FDA registration number"
+                aria-label="Barcode, QR code, o FDA registration number"
               />
             </div>
             <button
@@ -90,7 +101,7 @@ export default function ScannerPage() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Verifying...
+                  Vine-verify...
                 </span>
               ) : (
                 'Verify'
@@ -125,8 +136,8 @@ export default function ScannerPage() {
                   result.status === 'found' ? 'text-primary-800' :
                   result.status === 'not_found' ? 'text-amber-800' : 'text-danger-dark'
                 }`}>
-                  {result.status === 'found' ? 'Product Verified ✓' :
-                   result.status === 'not_found' ? 'Product Not Found' : 'Error'}
+                   {result.status === 'found' ? 'Tunay ang Produkto ✓' :
+                   result.status === 'not_found' ? 'Hindi Nahanap ang Produkto' : 'Error'}
                 </h3>
                 <p className={`text-sm ${
                   result.status === 'found' ? 'text-primary-700' :
@@ -137,7 +148,7 @@ export default function ScannerPage() {
 
                 {result.medicine && (
                   <div className="mt-4 p-4 bg-white rounded-xl border border-surface-200">
-                    <h4 className="font-medium text-surface-900 mb-3">Product Details</h4>
+                    <h4 className="font-medium text-surface-900 mb-3">Detalye ng Produkto</h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="text-surface-500">Brand Name</span>
@@ -161,7 +172,7 @@ export default function ScannerPage() {
                         href={`/medicines/${result.medicine.id}`}
                         className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                       >
-                        View Prices →
+                        Tignan ang mga Presyo →
                       </Link>
                     </div>
                   </div>
@@ -174,7 +185,7 @@ export default function ScannerPage() {
                       className="btn-outline text-sm"
                     >
                       <Flag className="w-3.5 h-3.5" />
-                      Report Suspicious Product
+                      Magreklamo sa Kahina-hinalang Produkto
                     </Link>
                   </div>
                 )}
@@ -182,17 +193,6 @@ export default function ScannerPage() {
             </div>
           </div>
         )}
-
-        {/* Info */}
-        <div className="card bg-medical-50 border-medical-200">
-          <h3 className="font-medium text-medical-800 mb-2">How to Verify</h3>
-          <ul className="text-sm text-medical-700 space-y-1.5">
-            <li>• Look for the barcode on the medicine packaging</li>
-            <li>• Enter the numbers below the barcode</li>
-            <li>• Or enter the FDA Registration Number (e.g., FR-XXXX-XXXX)</li>
-            <li>• The system will cross-check against the FDA Philippines registry</li>
-          </ul>
-        </div>
       </div>
     </main>
   );
