@@ -25,20 +25,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'scannedCode and description are required' }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from('suspicious_product_reports')
-    .insert({
-      scanned_code: body.scannedCode,
-      description: body.description,
-      medicine_id: body.medicineId || null,
-      user_id: body.userId || null,
-      photo_url: body.photoUrl || null,
-      latitude: body.latitude || null,
-      longitude: body.longitude || null,
-      moderation_status: 'pending',
-    })
-    .select()
-    .single();
+  // No .select() read-back — INSERT policy only; RETURNING would need a SELECT policy
+  const { error } = await supabase.from('suspicious_product_reports').insert({
+    scanned_code: body.scannedCode,
+    description: body.description,
+    medicine_id: body.medicineId || null,
+    user_id: body.userId || null,
+    photo_url: body.photoUrl || null,
+    latitude: body.latitude || null,
+    longitude: body.longitude || null,
+    moderation_status: 'pending',
+  });
 
   if (error) {
     // QA-001: never leak raw DB errors (RLS/schema details) to clients
@@ -52,5 +49,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Hindi ma-save ang report. Subukan muli mamaya.' }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json({
+    success: true,
+    scanned_code: body.scannedCode,
+    moderation_status: 'pending',
+  });
 }
