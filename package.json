@@ -15,6 +15,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "db:migrate": "npx supabase db push",
     "db:seed": "npx tsx scripts/seed.ts",
+    "db:import": "npx tsx scripts/sync-fda.ts",
     "db:reset": "npx supabase db reset"
   },
   "engines": {
