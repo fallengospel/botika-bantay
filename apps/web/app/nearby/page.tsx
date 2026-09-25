@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MapPin, Navigation, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
@@ -37,11 +37,21 @@ export default function NearbyPage() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  useEffect(() => {
-    getUserLocation();
+  const fetchNearbyBranches = useCallback(async (lat: number, lng: number) => {
+    try {
+      const response = await fetch(`/api/branches?lat=${lat}&lng=${lng}`);
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+      setBranches(data);
+    } catch (error) {
+      console.error('Failed to fetch branches:', error);
+      setLocationError('Failed to load pharmacy data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const getUserLocation = () => {
+  const getUserLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setLocationError('Geolocation is not supported by your browser');
       setLoading(false);
@@ -61,21 +71,11 @@ export default function NearbyPage() {
         setLoading(false);
       }
     );
-  };
+  }, [fetchNearbyBranches]);
 
-  const fetchNearbyBranches = async (lat: number, lng: number) => {
-    try {
-      const response = await fetch(`/api/branches?lat=${lat}&lng=${lng}`);
-      if (!response.ok) throw new Error('Failed to fetch');
-      const data = await response.json();
-      setBranches(data);
-    } catch (error) {
-      console.error('Failed to fetch branches:', error);
-      setLocationError('Failed to load pharmacy data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    getUserLocation();
+  }, [getUserLocation]);
 
   const getDirections = (lat: number, lng: number) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
