@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import PriceCard from '@/components/price/PriceCard';
@@ -37,11 +37,7 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchMedicineDetails();
-  }, [params.id]);
-
-  const fetchMedicineDetails = async () => {
+  const fetchMedicineDetails = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -74,7 +70,11 @@ export default function MedicineDetailPage({ params }: { params: { id: string } 
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchMedicineDetails();
+  }, [fetchMedicineDetails]);
 
   if (loading) {
     return (

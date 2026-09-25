@@ -191,7 +191,7 @@ export default function ScannerPage() {
     } finally {
       if (ticket === inFlightRef.current) setLoading(false);
     }
-  }, [loading]);
+  }, []);
 
   const handleCameraScan = useCallback(
     (decodedText: string) => {

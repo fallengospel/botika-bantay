@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Flag, AlertTriangle, CheckCircle2, XCircle, Clock, Eye, Filter, Loader2 } from 'lucide-react';
@@ -39,36 +39,7 @@ export default function AdminPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const supabase = createSupabaseClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setUnauthorized(true);
-        setLoading(false);
-        setAuthChecked(true);
-        return;
-      }
-      setAuthChecked(true);
-      loadData();
-    } catch {
-      setUnauthorized(true);
-      setLoading(false);
-      setAuthChecked(true);
-    }
-  };
-
-  useEffect(() => {
-    if (authChecked && !unauthorized) {
-      loadData();
-    }
-  }, [activeTab, filter, authChecked, unauthorized]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const supabase = createSupabaseClient();
@@ -98,7 +69,32 @@ export default function AdminPage() {
     } catch {
     }
     setLoading(false);
-  };
+  }, [activeTab, filter]);
+
+  const checkAuth = useCallback(async () => {
+    try {
+      const supabase = createSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setUnauthorized(true);
+        setLoading(false);
+      }
+    } catch {
+      setUnauthorized(true);
+      setLoading(false);
+    }
+    setAuthChecked(true);
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (authChecked && !unauthorized) {
+      loadData();
+    }
+  }, [loadData, authChecked, unauthorized]);
 
   const moderateSubmission = async (id: string, status: 'approved' | 'rejected') => {
     try {
