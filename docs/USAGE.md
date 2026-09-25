@@ -50,7 +50,7 @@ BotikaBantay combines two everyday pain points for Filipino consumers — medici
 ### Tunay Check (Authenticity Verification)
 - Barcode/QR code scanning (mobile app)
 - Manual lookup by barcode number or FDA registration number (web app)
-- Cross-reference against FDA Philippines public drug registry
+- Cross-reference against BotikaBantay's catalog of FDA-registered products (not a live FDA API)
 - Verification history logging
 
 ### Nearby Pharmacies
@@ -111,7 +111,9 @@ botika-bantay/
 │   └── schema.sql              # Database schema
 │
 ├── scripts/
-│   └── seed.ts                 # Database seeding script
+│   ├── seed.ts                 # Database seeding script (idempotent)
+│   ├── sync-fda.ts             # Import medicines from a local FDA CSV export
+│   └── import-template.csv     # CSV template for db:import
 │
 └── docs/
     ├── QA_BUG_REPORT.md        # QA bug tracking
@@ -243,10 +245,14 @@ Scan the QR code with Expo Go (Android) or Camera (iOS).
 ### Key Commands
 
 ```bash
-npm run db:seed    # Seed database with sample data
+npm run db:seed    # Seed/expand demo catalog (idempotent)
+npm run db:import -- path/to/products.csv  # Import medicines from a local FDA product-list CSV
 npm run db:migrate # Push schema changes
 npm run db:reset   # Reset database ( destructive! )
 ```
+
+> `db:import` reads a local CSV export (template: `scripts/import-template.csv`).
+> BotikaBantay catalog of FDA-registered products — not a live FDA API.
 
 ---
 

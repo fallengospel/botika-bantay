@@ -1,102 +1,188 @@
+/**
+ * Import medicines from a CSV file into the BotikaBantay catalog.
+ *
+ * Honest scope: BotikaBantay catalog of FDA-registered products — this is
+ * NOT a live FDA API. The FDA Philippines does not publish a stable public
+ * API for product registration data. To import:
+ *
+ *   1. Obtain a product list export (CSV/XLSX) — e.g. the FDA e-PPS/CDRRS
+ *      product registration export, or your own compiled list.
+ *   2. Convert it to CSV with these headers (extra columns are ignored):
+ *
+ *        fda_registration_number,brand_name,generic_name,dosage_form,strength,manufacturer,barcode,conditions
+ *
+ *      - conditions is optional, a `|`-separated list of condition ids
+ *        (e.g. fever|headache)
+ *      - barcode is optional
+ *   3. Run:
+ *
+ *        npm run db:import -- path/to/products.csv
+ *
+ * Upserts on fda_registration_number (safe to re-run). Requires
+ * SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+ */
 import { createClient } from '@supabase/supabase-js';
-import fetch from 'node-fetch';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const supabaseUrl = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_SERVICE_ROLE_KEY';
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
+  process.exit(1);
+}
 
-interface FDAProduct {
-  registration_number: string;
-  product_name: string;
+const REQUIRED_COLUMNS = [
+  'fda_registration_number',
+  'brand_name',
+  'generic_name',
+  'dosage_form',
+  'strength',
+  'manufacturer',
+] as const;
+
+interface CsvRow {
+  fda_registration_number: string;
+  brand_name: string;
   generic_name: string;
   dosage_form: string;
   strength: string;
   manufacturer: string;
   barcode?: string;
+  conditions?: string[];
 }
 
-// Note: This is a placeholder script. The actual FDA Philippines API
-// may have different endpoints and data format. You'll need to adjust
-// this script based on the actual FDA Philippines data source.
+/** Minimal RFC-4180-ish CSV parser (handles quoted fields and newlines). */
+function parseCsv(content: string): Record<string, string>[] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
 
-async function fetchFDAData(): Promise<FDAProduct[]> {
-  // TODO: Implement actual FDA Philippines API call
-  // This could be:
-  // 1. Direct API call to FDA Philippines
-  // 2. Scraping their public registry
-  // 3. Downloading a CSV/Excel file they publish
-  // 4. Using their open data portal
-  
-  console.log('Fetching FDA data...');
-  
-  // Placeholder - replace with actual implementation
-  const response = await fetch('https://www.fda.gov.ph/api/products');
-  
-  if (!response.ok) {
-    throw new Error(`FDA API error: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  return data.products || [];
-}
-
-async function syncFDAData() {
-  try {
-    const products = await fetchFDAData();
-    
-    console.log(`Found ${products.length} products from FDA`);
-    
-    for (const product of products) {
-      // Check if medicine already exists
-      const { data: existing } = await supabase
-        .from('medicines')
-        .select('id')
-        .eq('fda_registration_number', product.registration_number)
-        .single();
-
-      if (existing) {
-        // Update existing medicine
-        const { error } = await supabase
-          .from('medicines')
-          .update({
-            brand_name: product.product_name,
-            generic_name: product.generic_name,
-            dosage_form: product.dosage_form,
-            strength: product.strength,
-            manufacturer: product.manufacturer,
-            barcode: product.barcode,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id);
-
-        if (error) {
-          console.error('Error updating medicine:', product.registration_number, error);
+  for (let i = 0; i < content.length; i++) {
+    const ch = content[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (content[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
         }
       } else {
-        // Insert new medicine
-        const { error } = await supabase.from('medicines').insert({
-          brand_name: product.product_name,
-          generic_name: product.generic_name,
-          dosage_form: product.dosage_form,
-          strength: product.strength,
-          manufacturer: product.manufacturer,
-          fda_registration_number: product.registration_number,
-          barcode: product.barcode,
-        });
-
-        if (error) {
-          console.error('Error inserting medicine:', product.registration_number, error);
-        }
+        field += ch;
       }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ',') {
+      row.push(field);
+      field = '';
+    } else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && content[i + 1] === '\n') i++;
+      row.push(field);
+      field = '';
+      if (row.some(c => c.trim() !== '')) rows.push(row);
+      row = [];
+    } else {
+      field += ch;
     }
-
-    console.log('FDA sync complete!');
-  } catch (error) {
-    console.error('FDA sync failed:', error);
-    process.exit(1);
   }
+  row.push(field);
+  if (row.some(c => c.trim() !== '')) rows.push(row);
+
+  if (rows.length < 2) throw new Error('CSV has no data rows.');
+
+  const headers = rows[0].map(h => h.trim().toLowerCase());
+  const missing = REQUIRED_COLUMNS.filter(c => !headers.includes(c));
+  if (missing.length) {
+    throw new Error(
+      `CSV is missing required column(s): ${missing.join(', ')}\n` +
+        `Required: ${REQUIRED_COLUMNS.join(', ')}\n` +
+        `Optional: barcode, conditions`
+    );
+  }
+
+  return rows.slice(1).map(r => {
+    const obj: Record<string, string> = {};
+    headers.forEach((h, idx) => {
+      obj[h] = (r[idx] ?? '').trim();
+    });
+    return obj;
+  });
 }
 
-// Run the sync
-syncFDAData();
+function toRecord(row: Record<string, string>): CsvRow | null {
+  const reg = row.fda_registration_number;
+  if (!reg || !row.brand_name || !row.generic_name) return null;
+
+  const conditions = row.conditions
+    ? row.conditions
+        .split('|')
+        .map(c => c.trim())
+        .filter(Boolean)
+    : undefined;
+
+  return {
+    fda_registration_number: reg,
+    brand_name: row.brand_name,
+    generic_name: row.generic_name,
+    dosage_form: row.dosage_form || 'Tablet',
+    strength: row.strength || 'N/A',
+    manufacturer: row.manufacturer || 'Unknown',
+    barcode: row.barcode || undefined,
+    conditions,
+  };
+}
+
+async function importCsv(csvPath: string) {
+  const resolved = path.resolve(csvPath);
+  if (!fs.existsSync(resolved)) {
+    console.error(`File not found: ${resolved}`);
+    process.exit(1);
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const content = fs.readFileSync(resolved, 'utf-8');
+  const rows = parseCsv(content);
+  const records = rows.map(toRecord).filter((r): r is CsvRow => r !== null);
+
+  console.log(`Importing ${records.length} medicines from ${resolved}`);
+  console.log('Source: local CSV import — BotikaBantay catalog (not a live FDA API)');
+
+  let upserted = 0;
+  let failed = 0;
+
+  for (const rec of records) {
+    const { barcode, conditions, ...med } = rec;
+    const payload: Record<string, unknown> = { ...med, updated_at: new Date().toISOString() };
+    if (barcode) payload.barcode = barcode;
+    if (conditions) payload.conditions = conditions;
+
+    const { error } = await supabase
+      .from('medicines')
+      .upsert(payload, { onConflict: 'fda_registration_number' })
+      .select('id');
+
+    if (error) {
+      failed++;
+      console.error(`  fail ${rec.fda_registration_number} (${rec.brand_name}): ${error.message}`);
+    } else {
+      upserted++;
+    }
+  }
+
+  console.log(`Done: ${upserted} upserted (${failed} failed).`);
+  if (failed > 0) process.exitCode = 1;
+}
+
+const arg = process.argv[2];
+if (!arg) {
+  console.error('Usage: npm run db:import -- path/to/products.csv');
+  process.exit(1);
+}
+
+importCsv(arg).catch(err => {
+  console.error('Import failed:', err instanceof Error ? err.message : err);
+  process.exit(1);
+});
