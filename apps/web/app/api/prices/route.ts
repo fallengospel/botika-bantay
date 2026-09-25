@@ -149,20 +149,23 @@ export async function POST(request: Request) {
     }
   }
 
-  const { data: priceData, error: priceError } = await supabase
-    .from('prices')
-    .insert({
-      medicine_id: body.medicineId,
-      branch_id: body.branchId,
-      price: body.price,
-      source_type: body.sourceType || 'crowdsourced',
-      submitted_by: body.submittedBy || null,
-      verification_status: outlierFlag ? 'rejected' : 'pending',
-    })
-    .select()
-    .single();
+  // No .select() read-back — public SELECT is verified-only; RETURNING needs SELECT policy
+  const { error: priceError } = await supabase.from('prices').insert({
+    medicine_id: body.medicineId,
+    branch_id: body.branchId,
+    price: body.price,
+    source_type: body.sourceType || 'crowdsourced',
+    submitted_by: body.submittedBy || null,
+    verification_status: outlierFlag ? 'rejected' : 'pending',
+  });
 
   if (priceError) {
+    if (priceError.message?.includes('row-level security')) {
+      return NextResponse.json(
+        { error: 'Hindi ma-save ang presyo. Subukan muli mamaya.' },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ error: priceError.message }, { status: 500 });
   }
 
@@ -179,7 +182,10 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    ...priceData,
+    medicine_id: body.medicineId,
+    branch_id: body.branchId,
+    price: body.price,
+    verification_status: outlierFlag ? 'rejected' : 'pending',
     outlier_flag: outlierFlag,
     ...(outlierFlag && { message: 'Price flagged as outlier and auto-rejected.' }),
   });
