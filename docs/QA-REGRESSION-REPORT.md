@@ -104,6 +104,12 @@
   memory only.
 - **Resolution:** Documented. Re-verify on staging deployment. Consider Redis-backed
   limiter before production scale.
+- **Update (2026-09-29):** **IMPLEMENTED** — Upstash Redis (REST) fixed-window limiter
+  in `apps/web/lib/api-utils.ts` (`checkRateLimit` now async, atomic INCR+PEXPIRE via
+  EVAL). Falls back to in-memory when `UPSTASH_REDIS_REST_URL`/`_TOKEN` unset or
+  unreachable. In-memory fallback verified in production (429s enforced; parallel
+  cross-instance bypass observed — exactly the gap Redis closes).
+  **Activation pending:** add Upstash env vars to Vercel.
 
 ### QA-009 — LOW: Ambiguous verification branch rarely reachable (non-blocking)
 
@@ -123,7 +129,11 @@
 - **Update (2026-09-25):** **VERIFIED (production)** — confirmed user session →
   `GET /api/admin/submissions` 200; `PATCH {status:"approved"}` 200
   `{"success":true,"cascaded":"verified"}`; no-auth PATCH → 401.
-  Staging confirmation with a human-signed-in account still optional.
+- **Update (2026-09-29):** **VERIFIED (staging preview)** — all env vars extended to
+  Vercel Preview; staging preview `https://web-qgl29ljww-kaiba-corp.vercel.app`
+  serves all pages 200, admin GET → 401 without token / **200 with QA account
+  session** (`qa-admin010@botikabantay.ph`). Remaining: human browser sign-in
+  click-through (manual).
 
 ### QA-011 — INFO: Pending (unmoderated) prices remain publicly visible
 
@@ -174,12 +184,15 @@
 1. ~~**BLOCKER (external):** Run RLS policy SQL in Supabase SQL Editor.~~
    **RESOLVED (2026-09-25)** — migration applied; report insert 200 verified in
    production (v1.4.0 + `a381fbe`).
-2. QA-008: re-verify rate limits on staging deployment; Redis-backed limiter before scale.
+2. QA-008: ~~Redis-backed limiter~~ **IMPLEMENTED 2026-09-29** (Upstash REST +
+   in-memory fallback). Activation: add `UPSTASH_REDIS_REST_URL` /
+   `UPSTASH_REDIS_REST_TOKEN` to Vercel Production + Preview.
 3. ~~QA-009: ambiguous-match UX improvement.~~ **FIXED in v1.4.0** — step-3 returns
    `ambiguous` when >1 match (limit 10, suggestions ≤5). Production-verified.
 4. ~~QA-010: manual admin auth test on staging with a confirmed account.~~
-   **VERIFIED in production (2026-09-25)** — session GET/PATCH 200, cascade applied,
-   no-auth 401. Human sign-in on staging optional.
+   **VERIFIED: production (2026-09-25) + staging preview machine test (2026-09-29,
+   `qa-admin010@botikabantay.ph`).** Remaining: 2-minute human browser sign-in
+   on the staging URL (handoff).
 5. ~~QA-011: moderation cascade (`price_submissions` → `prices.verification_status`).~~
    **FIXED in v1.4.0** — public GET only `verified`; admin PATCH cascades via
    `supabaseAdmin` (`SUPABASE_SERVICE_ROLE_KEY` required on Vercel).
