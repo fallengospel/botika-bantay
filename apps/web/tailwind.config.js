@@ -8,7 +8,7 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#12924A',
+          DEFAULT: '#10853F',
           deep: '#0A5C30',
           mint: '#E7F4EC',
           gold: '#F2B705',
@@ -24,7 +24,7 @@ module.exports = {
           300: '#6FC49A',
           400: '#3DAD74',
           500: '#1E9E56',
-          600: '#12924A',
+          600: '#10853F',
           700: '#0A5C30',
           800: '#084A27',
           900: '#06381F',
@@ -56,7 +56,7 @@ module.exports = {
           900: '#0F1F17',
           950: '#07110D',
         },
-        success: { DEFAULT: '#12924A', light: '#E7F4EC', dark: '#0A5C30' },
+        success: { DEFAULT: '#10853F', light: '#E7F4EC', dark: '#0A5C30' },
         warning: { DEFAULT: '#F2B705', light: '#FEF6D6', dark: '#92400e' },
         danger: { DEFAULT: '#ef4444', light: '#fee2e2', dark: '#991b1b' },
         accent: { DEFAULT: '#F2B705', light: '#FEF6D6', dark: '#B45309' },

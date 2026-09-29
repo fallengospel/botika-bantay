@@ -18,13 +18,16 @@ const TONES: Record<MarkTone, { shield: string; knock: string; accent: string }>
 
 export function LogoMark({ size = 48, tone = 'color', title = 'BotikaBantay', className }: LogoMarkProps) {
   const c = TONES[tone];
+  // Empty title = decorative (used next to visible wordmark text) → hide from AT.
+  const a11y = title
+    ? ({ role: 'img', 'aria-label': title } as const)
+    : ({ 'aria-hidden': true } as const);
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 64 64"
-      role="img"
-      aria-label={title}
+      {...a11y}
       className={className}
     >
       <path
