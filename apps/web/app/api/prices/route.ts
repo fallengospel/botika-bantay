@@ -8,7 +8,7 @@ const DAILY_SUBMISSION_LIMIT = 10;
 export async function GET(request: Request) {
   // QA-006: rate limit — heavy endpoint (full scan + manual joins)
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  const rateLimit = checkRateLimit(`prices:${ip}`, 60, 60000);
+  const rateLimit = await checkRateLimit(`prices:${ip}`, 60, 60000);
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
   }
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
 
   // Rate limit: 20 price submissions per minute per IP
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  const rateLimit = checkRateLimit(`price:${ip}`, 20, 60000);
+  const rateLimit = await checkRateLimit(`price:${ip}`, 20, 60000);
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
