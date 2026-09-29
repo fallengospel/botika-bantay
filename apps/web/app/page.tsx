@@ -474,7 +474,7 @@ export default function Home() {
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Start saving today
               </h2>
-              <p className="text-lg text-white/85 max-w-2xl mx-auto mb-8">
+              <p className="text-lg text-white max-w-2xl mx-auto mb-8">
                 Hanapin ang pinakamurang presyo for your medicine and check codes in one place.
                 Free — no account needed.
               </p>
@@ -506,7 +506,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-white mb-4">Features</h4>
+              <h3 className="font-semibold text-white mb-4">Features</h3>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/medicines" className="hover:text-brand-mint transition-colors">Price Check</Link></li>
                 <li><Link href="/scanner" className="hover:text-brand-mint transition-colors">Catalog Check</Link></li>
@@ -515,7 +515,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-white mb-4">Pharmacies</h4>
+              <h3 className="font-semibold text-white mb-4">Pharmacies</h3>
               <ul className="space-y-2 text-sm">
                 <li>Mercury Drug</li>
                 <li>Watsons</li>
@@ -526,7 +526,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
+              <h3 className="font-semibold text-white mb-4">Legal</h3>
               <ul className="space-y-2 text-sm">
                 <li>Privacy Policy</li>
                 <li>Terms of Service</li>
@@ -541,7 +541,7 @@ export default function Home() {
             <p className="text-sm text-white/50">
               &copy; {new Date().getFullYear()} BotikaBantay. Not a substitute for professional medical advice.
             </p>
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-white/60">
               Data sourced from FDA Philippines public registry
             </p>
           </div>
