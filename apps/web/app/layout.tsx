@@ -21,6 +21,9 @@ export const metadata: Metadata = {
     'Compare medicine prices across Mercury Drug, Watsons, Rose Pharmacy and more. Check barcodes against our catalog of FDA-registered products — from Aparri to Jolo.',
   keywords: ['medicine', 'price comparison', 'Philippines', 'pharmacy', 'FDA', 'verification', 'botika', 'gamot', 'presyo'],
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icons/icon-192x192.svg',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
