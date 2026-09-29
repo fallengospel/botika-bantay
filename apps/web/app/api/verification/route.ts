@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   // Rate limit: 30 requests per minute per IP
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  const rateLimit = checkRateLimit(`verify:${ip}`, 30, 60000);
+  const rateLimit = await checkRateLimit(`verify:${ip}`, 30, 60000);
 
   if (!rateLimit.allowed) {
     return NextResponse.json(

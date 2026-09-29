@@ -5,7 +5,7 @@ import { checkRateLimit } from '@/lib/api-utils';
 export async function GET(request: Request) {
   // Rate limit: 60 requests per minute per IP
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  const rateLimit = checkRateLimit(`branches:${ip}`, 60, 60000);
+  const rateLimit = await checkRateLimit(`branches:${ip}`, 60, 60000);
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
   }
