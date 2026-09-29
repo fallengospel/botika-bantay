@@ -77,8 +77,10 @@ Before merging to `main`:
   - [x] `supabase/migrations/20260923_production_hardening_v1_4_0.sql` (RLS inserts) — applied 2026-09-25
 - [ ] Environment variables verified on Vercel
   - [x] `SUPABASE_SERVICE_ROLE_KEY` set (admin moderation cascade) — verified 2026-09-25
-- [ ] Lighthouse score acceptable (>80)
-- [ ] Mobile responsiveness checked
+- [x] Lighthouse score acceptable (>80) — 2026-09-29 production:
+      mobile **99/100/100/100**, desktop **95/100/100/100** (P/A/BP/SEO)
+- [x] Mobile responsiveness checked — Lighthouse mobile emulation + responsive routes;
+      on-device pass still recommended before store submission
 
 ### Testing Commands
 
@@ -108,11 +110,17 @@ If production has issues:
 
 ### Environment URLs
 
-| Environment | URL | Vercel Project |
-|-------------|-----|----------------|
-| Testing | `https://web-testing.vercel.app` | botika-bantay-testing |
-| Staging | `https://web-staging.vercel.app` | botika-bantay-staging |
-| Production | `https://web-eight-xi-tc0dhj19wa.vercel.app` | kaiba-corp/web |
+One Vercel project (`kaiba-corp/web`) serves all environments:
+
+| Environment | URL | How |
+|-------------|-----|-----|
+| Production | `https://web-eight-xi-tc0dhj19wa.vercel.app` | deploy from `main` (`npx vercel@59.25.4 --prod`) |
+| Staging | latest **Preview** deployment of `staging` (e.g. `https://web-qgl29ljww-kaiba-corp.vercel.app`) | Vercel Git integration on `staging` push, or `npx vercel@59.25.4` from the branch |
+| Testing | latest **Preview** deployment of `testing` | Vercel Git integration on `testing` push |
+
+> Note: `web-staging.vercel.app` / `web-testing.vercel.app` are **not** this project
+> (they belong to Vercel's Builder). Preview env vars (incl. `SUPABASE_SERVICE_ROLE_KEY`)
+> were added 2026-09-29 so staging previews are fully functional.
 
 ### Release Tagging
 
