@@ -89,27 +89,15 @@ API Verification:     4/4 passed (barcode, FDA#, brand, not found)
 API Outlier Check:    1/1 passed
 API Submission Limit: 1/1 passed
 API Admin:            2/2 passed
-API Reports:          0/1 blocked (RLS policy - user action needed)
+API Reports:          1/1 passed (RLS applied 2026-09-25 — production 200 verified)
 Rate Limiting:        1/1 passed (30 req/min enforced)
 
-TOTAL: 27/28 passed (1 awaiting user RLS fix)
+TOTAL: 28/28 passed
 ```
 
-### RLS Fix Required
+### RLS Fix — APPLIED (2026-09-25)
 
-Run this SQL in Supabase SQL Editor:
-
-```sql
--- Run in Supabase SQL Editor (also in supabase/migrations/20260923_production_hardening_v1_4_0.sql)
-DROP POLICY IF EXISTS "Users can insert reports" ON suspicious_product_reports;
-DROP POLICY IF EXISTS "Allow report insert" ON suspicious_product_reports;
-CREATE POLICY "Allow report insert" ON suspicious_product_reports FOR INSERT WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Users can insert price submissions" ON price_submissions;
-DROP POLICY IF EXISTS "Allow price submission insert" ON price_submissions;
-CREATE POLICY "Allow price submission insert" ON price_submissions FOR INSERT WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Users can view own submissions" ON price_submissions;
-DROP POLICY IF EXISTS "Allow view price submissions" ON price_submissions;
-CREATE POLICY "Allow view price submissions" ON price_submissions FOR SELECT USING (true);
-```
+Supabase migration `supabase/migrations/20260923_production_hardening_v1_4_0.sql` was
+run in the SQL Editor (v1.4.0). Report and price-submission inserts now succeed;
+production smoke confirmed `POST /api/reports` → 200 and admin PATCH cascade →
+`{"success":true,"cascaded":"verified"}`.
