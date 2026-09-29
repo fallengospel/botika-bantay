@@ -74,9 +74,9 @@ Before merging to `main`:
 - [ ] All staging tests pass
 - [ ] No regression from previous production version
 - [ ] Supabase migrations applied (if any)
-  - [ ] `supabase/migrations/20260923_production_hardening_v1_4_0.sql` (RLS inserts)
+  - [x] `supabase/migrations/20260923_production_hardening_v1_4_0.sql` (RLS inserts) — applied 2026-09-25
 - [ ] Environment variables verified on Vercel
-  - [ ] `SUPABASE_SERVICE_ROLE_KEY` set (admin moderation cascade)
+  - [x] `SUPABASE_SERVICE_ROLE_KEY` set (admin moderation cascade) — verified 2026-09-25
 - [ ] Lighthouse score acceptable (>80)
 - [ ] Mobile responsiveness checked
 

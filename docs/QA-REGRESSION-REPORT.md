@@ -1,8 +1,8 @@
 # QA Regression Test Report — BotikaBantay
 
-**Date:** 2026-09-23
-**Branches tested:** `testing` (946695b), `staging` (946695b — in sync)
-**Environment:** Local Next.js 14.2.35 dev server + Supabase Cloud
+**Date:** 2026-09-23 (updated 2026-09-25 — v1.4.0 blocks resolved & verified)
+**Branches tested:** `testing` (946695b), `staging` (946695b — in sync); production verified on `main` (7694d21)
+**Environment:** Local Next.js 14.2.35 dev server + Supabase Cloud; production smoke on Vercel
 **Tester:** Automated regression suite (route smoke, API security, input validation, data integrity)
 
 ---
@@ -36,6 +36,11 @@
 - **Impact:** Internal schema/table names exposed; poor error UX outside the web page.
 - **Resolution:** Sanitize at API level — detect RLS errors, return friendly
   Filipino message with 503. (Mobile/web clients now receive safe errors.)
+- **Update (2026-09-25):** **RESOLVED** — RLS migration
+  `supabase/migrations/20260923_production_hardening_v1_4_0.sql` applied in Supabase
+  SQL Editor; inserts no longer hit RLS. Follow-up fix `a381fbe` removed
+  `.select().single()` read-back (RETURNING needs a SELECT policy).
+  **Production verified:** `POST /api/reports` → 200 `{"success":true,...}`.
 
 ### QA-002 — HIGH: Medicine-not-found path returns 500 instead of graceful not-found
 
@@ -106,14 +111,19 @@
   "paracetamol") return a single arbitrary match (`status: found`) before step 4's
   ambiguous branch can run.
 - **Impact:** Users may get "verified" result that isn't their exact product.
-- **Resolution:** Documented for product backlog (raise step-3 limit, prefer ambiguous
-  when >1 match).
+- **Resolution:** ~~Documented for product backlog~~ **FIXED in v1.4.0** — step-3
+  returns `ambiguous` when >1 match (limit 10, suggestions ≤5).
+  **Production verified:** `paracetamol` → `status: ambiguous`, 5 suggestions.
 
 ### QA-010 — INFO: Authenticated admin flows not machine-tested
 
 - Unauthenticated (401) and invalid-token (401) paths verified automatically.
 - Valid-session GET/PATCH requires a confirmed user account — **manual test required
   on staging** after RLS SQL is applied.
+- **Update (2026-09-25):** **VERIFIED (production)** — confirmed user session →
+  `GET /api/admin/submissions` 200; `PATCH {status:"approved"}` 200
+  `{"success":true,"cascaded":"verified"}`; no-auth PATCH → 401.
+  Staging confirmation with a human-signed-in account still optional.
 
 ### QA-011 — INFO: Pending (unmoderated) prices remain publicly visible
 
@@ -124,6 +134,10 @@
   admin approval flow (`price_submissions.moderation_status`) does not cascade to the
   `prices` table, so approved crowd prices would never appear. Requires moderation
   cascade design (backlog), not a safe hot-fix. **Rejected rows fixed now (QA-004).**
+- **Update (2026-09-25):** **FIXED in v1.4.0** — public GET returns `verified` only;
+  admin PATCH approves a submission and cascades the matching `prices` row to
+  `verified` via `supabaseAdmin`. **Production verified end-to-end**
+  (submission `pending` → approve → price `verified` → visible in public list).
 
 ---
 
@@ -157,13 +171,16 @@
 
 ## Outstanding / Backlog
 
-1. **BLOCKER (external):** Run RLS policy SQL in Supabase SQL Editor — until then
-   report/price-submission inserts fail by design (now fail *gracefully*).
-   **SQL:** `supabase/migrations/20260923_production_hardening_v1_4_0.sql` (v1.4.0).
+1. ~~**BLOCKER (external):** Run RLS policy SQL in Supabase SQL Editor.~~
+   **RESOLVED (2026-09-25)** — migration applied; report insert 200 verified in
+   production (v1.4.0 + `a381fbe`).
 2. QA-008: re-verify rate limits on staging deployment; Redis-backed limiter before scale.
 3. ~~QA-009: ambiguous-match UX improvement.~~ **FIXED in v1.4.0** — step-3 returns
-   `ambiguous` when >1 match (limit 10, suggestions ≤5).
-4. QA-010: manual admin auth test on staging with a confirmed account.
+   `ambiguous` when >1 match (limit 10, suggestions ≤5). Production-verified.
+4. ~~QA-010: manual admin auth test on staging with a confirmed account.~~
+   **VERIFIED in production (2026-09-25)** — session GET/PATCH 200, cascade applied,
+   no-auth 401. Human sign-in on staging optional.
 5. ~~QA-011: moderation cascade (`price_submissions` → `prices.verification_status`).~~
    **FIXED in v1.4.0** — public GET only `verified`; admin PATCH cascades via
    `supabaseAdmin` (`SUPABASE_SERVICE_ROLE_KEY` required on Vercel).
+   Production-verified end-to-end.
